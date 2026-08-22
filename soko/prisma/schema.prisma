@@ -1,0 +1,136 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  BUSINESS
+  ADMIN
+}
+
+enum BusinessStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PROCESSING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum DeliveryOption {
+  SELLER_DELIVERY
+  CUSTOMER_PICKUP
+  MEET_DIRECTLY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(CUSTOMER)
+  phone         String?
+  createdAt     DateTime  @default(now())
+
+  business      Business?
+  orders        Order[]
+  messages      Message[]
+}
+
+model Business {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String?
+  logoUrl     String?
+  location    String
+  phone       String
+  status      BusinessStatus @default(PENDING)
+  offersDelivery Boolean     @default(false)
+  createdAt   DateTime       @default(now())
+
+  owner       User           @relation(fields: [ownerId], references: [id])
+  ownerId     String         @unique
+
+  products    Product[]
+  orders      Order[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  quantity    Int      @default(0)
+  imageUrl    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  business    Business @relation(fields: [businessId], references: [id])
+  businessId  String
+
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             String         @id @default(cuid())
+  status         OrderStatus    @default(NEW)
+  deliveryOption DeliveryOption @default(CUSTOMER_PICKUP)
+  note           String?
+  totalPrice     Float
+  createdAt      DateTime       @default(now())
+
+  customer       User           @relation(fields: [customerId], references: [id])
+  customerId     String
+
+  business       Business       @relation(fields: [businessId], references: [id])
+  businessId     String
+
+  items          OrderItem[]
+  messages       Message[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
+}

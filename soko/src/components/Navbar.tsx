@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { auth, signOut } from '@/auth';
+   import MobileNav from './MobileNav';
 
 export default async function Navbar() {
   const session = await auth();
@@ -35,6 +36,7 @@ export default async function Navbar() {
             </Link>
           )}
         </nav>
+   <MobileNav role={role} isLoggedIn={!!session?.user} />
 
         <div className="flex items-center gap-3 text-sm">
           {session?.user ? (

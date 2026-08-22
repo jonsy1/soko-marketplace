@@ -29,7 +29,7 @@ export default async function Navbar() {
               Admin
             </Link>
           )}
-          {!role && session?.user && (
+          {role === 'CUSTOMER' && (
             <Link href="/register-business" className="hover:text-market-400">
               Sell on Soko
             </Link>

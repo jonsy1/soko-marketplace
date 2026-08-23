@@ -85,10 +85,35 @@ function HomeContent() {
                 activeCategory === c.slug ? 'btn-secondary' : 'btn-outline'
               }`}
             >
-              {c.name} ({c._count.products})
+              {c.name} (
+              {c._count.products +
+                c.children.reduce((sum: number, sub: any) => sum + sub._count.products, 0)}
+              )
             </button>
           ))}
         </div>
+
+        {(() => {
+          const activeParent = categories.find((c) => c.slug === activeCategory);
+          if (!activeParent || activeParent.children.length === 0) return null;
+          return (
+            <div className="flex gap-2 overflow-x-auto pb-2 -mt-4 mb-6">
+              {activeParent.children.map((sub: any) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveCategory(sub.slug)}
+                  className={`btn text-xs px-3 py-1 whitespace-nowrap ${
+                    activeCategory === sub.slug
+                      ? 'bg-night text-market-50'
+                      : 'border border-night/15 text-night/60'
+                  }`}
+                >
+                  {sub.name} ({sub._count.products})
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         {loading ? (
           <p className="text-night/50 text-sm">{t.home.searching}</p>

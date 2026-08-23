@@ -105,11 +105,21 @@ export default function EditProductPage() {
             onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
           >
             <option value="">No category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {categories.map((c) =>
+              c.children.length > 0 ? (
+                <optgroup key={c.id} label={c.name}>
+                  {c.children.map((sub: any) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              )
+            )}
           </select>
         </div>
         <div>

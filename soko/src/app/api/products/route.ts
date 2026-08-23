@@ -27,7 +27,18 @@ export async function GET(req: Request) {
       { description: { contains: q } },
     ];
   }
-  if (category) where.category = { slug: category };
+  if (category) {
+    const cat = await prisma.category.findUnique({
+      where: { slug: category },
+      include: { children: { select: { id: true } } },
+    });
+    if (cat) {
+      const ids = [cat.id, ...cat.children.map((c) => c.id)];
+      where.categoryId = { in: ids };
+    } else {
+      where.category = { slug: category };
+    }
+  }
   if (businessId) where.businessId = businessId;
   if (location) where.business = { location: { contains: location } };
 

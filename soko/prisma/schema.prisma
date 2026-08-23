@@ -69,9 +69,13 @@ model Business {
 
 model Category {
   id       String    @id @default(cuid())
-  name     String    @unique
+  name     String
   slug     String    @unique
   products Product[]
+
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
 }
 
 model Product {

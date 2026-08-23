@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useTranslation } from '@/components/LanguageProvider';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -13,6 +14,7 @@ export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data: session } = useSession();
+  const { t } = useTranslation();
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [delivery, setDelivery] = useState('CUSTOMER_PICKUP');
@@ -46,11 +48,11 @@ export default function ProductPage() {
       setError(data.error || 'Could not place order.');
       return;
     }
-    setSuccess('Order placed! The seller will contact you to arrange delivery or pickup.');
+    setSuccess(t.product.orderSuccess);
   }
 
-  if (!product) return <div className="max-w-5xl mx-auto px-4 py-16 text-night/50">Loading…</div>;
-  if (product.error) return <div className="max-w-5xl mx-auto px-4 py-16">Product not found.</div>;
+  if (!product) return <div className="max-w-5xl mx-auto px-4 py-16 text-night/50">{t.product.loading}</div>;
+  if (product.error) return <div className="max-w-5xl mx-auto px-4 py-16">{t.product.notFound}</div>;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
@@ -75,14 +77,14 @@ export default function ProductPage() {
           <span className="badge bg-market-100 text-market-600 mt-2">{product.category.name}</span>
         )}
         <p className="text-night/70 text-sm mt-4 whitespace-pre-line">
-          {product.description || 'No description provided.'}
+          {product.description || t.product.noDescription}
         </p>
         <p className="text-sm text-night/50 mt-2">
-          {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of stock'}
+          {product.quantity > 0 ? `${product.quantity} ${t.product.inStock}` : t.product.outOfStock}
         </p>
 
         <div className="card p-5 mt-6 space-y-4">
-          <h2 className="font-semibold">Place an order</h2>
+          <h2 className="font-semibold">{t.product.placeOrder}</h2>
           {error && <div className="text-sm bg-clay/10 text-clay px-3 py-2 rounded-card">{error}</div>}
           {success && (
             <div className="text-sm bg-teal-50 text-teal-600 px-3 py-2 rounded-card">{success}</div>
@@ -90,7 +92,7 @@ export default function ProductPage() {
           {!success && (
             <>
               <div>
-                <label className="label">Quantity</label>
+                <label className="label">{t.product.quantity}</label>
                 <input
                   type="number"
                   min={1}
@@ -101,23 +103,23 @@ export default function ProductPage() {
                 />
               </div>
               <div>
-                <label className="label">Delivery option</label>
+                <label className="label">{t.product.deliveryOption}</label>
                 <select className="input" value={delivery} onChange={(e) => setDelivery(e.target.value)}>
                   {product.business.offersDelivery && (
-                    <option value="SELLER_DELIVERY">Seller delivery</option>
+                    <option value="SELLER_DELIVERY">{t.product.sellerDelivery}</option>
                   )}
-                  <option value="CUSTOMER_PICKUP">Pickup from seller</option>
-                  <option value="MEET_DIRECTLY">Meet directly to exchange</option>
+                  <option value="CUSTOMER_PICKUP">{t.product.pickup}</option>
+                  <option value="MEET_DIRECTLY">{t.product.meetDirectly}</option>
                 </select>
               </div>
               <div>
-                <label className="label">Note to seller (optional)</label>
+                <label className="label">{t.product.noteOptional}</label>
                 <textarea
                   className="input"
                   rows={2}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Preferred time, color, size, etc."
+                  placeholder={t.product.notePlaceholder}
                 />
               </div>
               <button
@@ -126,10 +128,10 @@ export default function ProductPage() {
                 onClick={placeOrder}
               >
                 {placing
-                  ? 'Placing order…'
+                  ? t.product.placing
                   : product.quantity < 1
-                  ? 'Out of stock'
-                  : `Order · ${formatTZS(product.price * quantity)}`}
+                  ? t.product.outOfStock
+                  : `${t.product.order} · ${formatTZS(product.price * quantity)}`}
               </button>
             </>
           )}

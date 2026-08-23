@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
+import { useTranslation } from '@/components/LanguageProvider';
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
 
 function HomeContent() {
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(
@@ -34,13 +36,13 @@ function HomeContent() {
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (activeCategory) params.set('category', activeCategory);
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetch(`/api/products?${params.toString()}`)
         .then((r) => r.json())
         .then((data) => setProducts(Array.isArray(data) ? data : []))
         .finally(() => setLoading(false));
     }, 250);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [q, activeCategory]);
 
   return (
@@ -48,19 +50,16 @@ function HomeContent() {
       <section className="bg-night text-market-50">
         <div className="max-w-6xl mx-auto px-4 py-14 md:py-20">
           <p className="text-market-400 font-semibold text-sm uppercase tracking-wide mb-3">
-            One search. Every shop.
+            {t.home.tagline}
           </p>
           <h1 className="font-display font-bold text-3xl md:text-5xl max-w-2xl leading-tight">
-            Find any product from any business, in one place.
+            {t.home.title}
           </h1>
-          <p className="text-market-50/70 mt-4 max-w-xl">
-            Soko connects you to registered businesses across Tanzania — compare prices,
-            find sellers near you, and order directly. No shop is hidden in a WhatsApp status again.
-          </p>
+          <p className="text-market-50/70 mt-4 max-w-xl">{t.home.subtitle}</p>
           <div className="mt-8 max-w-xl">
             <input
               className="w-full rounded-card px-4 py-3 text-ink text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-market-400"
-              placeholder='Search — try "Air Force 1" or "sofa"'
+              placeholder={t.home.searchPlaceholder}
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -76,7 +75,7 @@ function HomeContent() {
               !activeCategory ? 'btn-secondary' : 'btn-outline'
             }`}
           >
-            All categories
+            {t.home.allCategories}
           </button>
           {categories.map((c) => (
             <button
@@ -92,21 +91,23 @@ function HomeContent() {
         </div>
 
         {loading ? (
-          <p className="text-night/50 text-sm">Searching…</p>
+          <p className="text-night/50 text-sm">{t.home.searching}</p>
         ) : products.length === 0 ? (
           <div className="text-center py-16">
-            <p className="font-semibold text-night/70">No products found.</p>
+            <p className="font-semibold text-night/70">{t.home.noResultsTitle}</p>
             <p className="text-sm text-night/50 mt-1">
-              Try a different search, or be the first to list this product —{' '}
+              {t.home.noResultsBody}{' '}
               <a href="/register-business" className="text-teal-500 font-semibold">
-                open your storefront
+                {t.home.openStorefront}
               </a>
               .
             </p>
           </div>
         ) : (
           <>
-            <p className="text-sm text-night/50 mb-4">{products.length} products found</p>
+            <p className="text-sm text-night/50 mb-4">
+              {products.length} {t.home.productsFound}
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {products.map((p) => (
                 <ProductCard key={p.id} product={p} />

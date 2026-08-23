@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { useTranslation } from '@/components/LanguageProvider';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,17 +49,15 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="font-display text-2xl font-bold mb-1">Create your account</h1>
-      <p className="text-night/60 text-sm mb-6">
-        Sign up to search the marketplace, place orders, or open your own storefront.
-      </p>
+      <h1 className="font-display text-2xl font-bold mb-1">{t.auth.registerTitle}</h1>
+      <p className="text-night/60 text-sm mb-6">{t.auth.registerSubtitle}</p>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-4">
         {error && (
           <div className="text-sm bg-clay/10 text-clay px-3 py-2 rounded-card">{error}</div>
         )}
         <div>
-          <label className="label">Full name</label>
+          <label className="label">{t.auth.fullName}</label>
           <input
             className="input"
             required
@@ -66,7 +66,7 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="label">Email</label>
+          <label className="label">{t.auth.email}</label>
           <input
             type="email"
             className="input"
@@ -76,7 +76,7 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="label">Phone (optional)</label>
+          <label className="label">{t.auth.phoneOptional}</label>
           <input
             className="input"
             value={form.phone}
@@ -84,7 +84,7 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="label">Password</label>
+          <label className="label">{t.auth.password}</label>
           <input
             type="password"
             className="input"
@@ -95,12 +95,12 @@ export default function RegisterPage() {
           />
         </div>
         <button className="btn btn-primary w-full" disabled={loading}>
-          {loading ? 'Creating account…' : 'Create account'}
+          {loading ? t.auth.creatingAccount : t.auth.createAccount}
         </button>
         <p className="text-sm text-center text-night/60">
-          Already have an account?{' '}
+          {t.auth.haveAccount}{' '}
           <Link href="/login" className="text-teal-500 font-semibold">
-            Log in
+            {t.auth.logIn}
           </Link>
         </p>
       </form>

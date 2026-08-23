@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
+import { useTranslation } from '@/components/LanguageProvider';
 
 export default function BusinessPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const [business, setBusiness] = useState<any>(null);
 
   useEffect(() => {
@@ -33,15 +35,15 @@ export default function BusinessPage() {
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-bold">{business.name}</h1>
               {business.status === 'VERIFIED' && (
-                <span className="badge bg-teal-50 text-teal-600">✓ Verified</span>
+                <span className="badge bg-teal-50 text-teal-600">✓ {t.business.verified}</span>
               )}
               {business.status === 'PENDING' && (
-                <span className="badge bg-market-100 text-market-600">New seller</span>
+                <span className="badge bg-market-100 text-market-600">{t.business.newSeller}</span>
               )}
             </div>
             <p className="text-sm text-night/50 mt-1">
               📍 {business.location} · 📞 {business.phone}
-              {business.offersDelivery && ' · 🚚 Delivery available'}
+              {business.offersDelivery && ` · 🚚 ${t.business.deliveryAvailable}`}
             </p>
             {business.description && (
               <p className="text-sm text-night/70 mt-2 max-w-xl">{business.description}</p>
@@ -51,14 +53,16 @@ export default function BusinessPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className="font-semibold mb-4">{business.products.length} products</h2>
+        <h2 className="font-semibold mb-4">
+          {business.products.length} {t.business.products}
+        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {business.products.map((p: any) => (
             <ProductCard key={p.id} product={{ ...p, business }} />
           ))}
         </div>
         {business.products.length === 0 && (
-          <p className="text-night/50 text-sm">This business hasn&apos;t listed any products yet.</p>
+          <p className="text-night/50 text-sm">{t.business.noProducts}</p>
         )}
       </div>
     </div>

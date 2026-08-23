@@ -1,0 +1,23 @@
+{
+  "name": "Soko Marketplace",
+  "short_name": "Soko",
+  "description": "One search. Every shop. Find any product from any business across Tanzania.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E2A2F",
+  "theme_color": "#0E2A2F",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

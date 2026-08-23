@@ -1,13 +1,28 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
 import { LanguageProvider } from '@/components/LanguageProvider';
+import RegisterSW from '@/components/RegisterSW';
 
 export const metadata: Metadata = {
   title: 'Soko — Find any business, any product, anywhere',
   description:
     'Soko is a marketplace platform where Tanzanian businesses open a digital storefront and customers discover products from every shop in one search.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Soko',
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/apple-touch-icon.png',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0E2A2F',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <LanguageProvider>
+            <RegisterSW />
             <Navbar />
             <main className="min-h-[calc(100vh-64px)]">{children}</main>
             <footer className="bg-night text-market-50/70 text-sm py-8 mt-16">

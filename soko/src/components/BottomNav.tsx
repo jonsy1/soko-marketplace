@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -13,7 +12,6 @@ function HomeIcon({ active }: { active: boolean }) {
     </svg>
   );
 }
-
 function GridIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -24,7 +22,6 @@ function GridIcon({ active }: { active: boolean }) {
     </svg>
   );
 }
-
 function ReceiptIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -33,7 +30,6 @@ function ReceiptIcon({ active }: { active: boolean }) {
     </svg>
   );
 }
-
 function ShopIcon({ active }: { active: boolean }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +48,6 @@ export default function BottomNav() {
   const { t } = useTranslation();
   const role = (session?.user as any)?.role as string | undefined;
   const isLoggedIn = !!session?.user;
-
   const shopHref =
     role === 'ADMIN'
       ? '/dashboard/admin'
@@ -75,7 +70,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-night/10 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-night border-t border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.25)]">
       <div className="grid grid-cols-4">
         {tabs.map((tab) => {
           const active =
@@ -86,11 +81,17 @@ export default function BottomNav() {
               key={tab.label}
               href={tab.guarded && !isLoggedIn ? '/login' : tab.href}
               onClick={(e) => tab.guarded && guardedNav(e, tab.href)}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium ${
-                active ? 'text-sky-600' : 'text-night/45'
+              className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-semibold transition ${
+                active ? 'text-clay' : 'text-white/50'
               }`}
             >
-              <Icon active={active} />
+              <span
+                className={`flex items-center justify-center w-9 h-9 rounded-full transition ${
+                  active ? 'bg-clay/15' : ''
+                }`}
+              >
+                <Icon active={active} />
+              </span>
               {tab.label}
             </Link>
           );

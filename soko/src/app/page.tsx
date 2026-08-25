@@ -1,5 +1,4 @@
 'use client';
-
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
@@ -12,6 +11,13 @@ export default function HomePage() {
     </Suspense>
   );
 }
+
+const TILE_STYLES = [
+  { bg: '#EFF6FF', text: '#1D4ED8' },
+  { bg: '#FEF3C7', text: '#B45309' },
+  { bg: '#ECFEFF', text: '#0E7490' },
+  { bg: '#FFF7ED', text: '#C2410C' },
+];
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -49,30 +55,60 @@ function HomeContent() {
     <div>
       <section className="bg-night text-market-50">
         <div className="max-w-6xl mx-auto px-4 py-14 md:py-20">
-          <p className="text-market-400 font-semibold text-sm uppercase tracking-wide mb-3">
+          <p className="text-clay font-semibold text-sm uppercase tracking-wide mb-3">
             {t.home.tagline}
           </p>
           <h1 className="font-display font-bold text-3xl md:text-5xl max-w-2xl leading-tight">
             {t.home.title}
           </h1>
           <p className="text-market-50/70 mt-4 max-w-xl">{t.home.subtitle}</p>
-          <div className="mt-8 max-w-xl">
+          <div className="mt-8 max-w-xl flex flex-col sm:flex-row gap-3">
             <input
-              className="w-full rounded-card px-4 py-3 text-ink text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-market-400"
+              className="flex-1 rounded-card px-4 py-3 text-ink text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-market-400"
               placeholder={t.home.searchPlaceholder}
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
+            <button className="btn bg-clay text-white font-semibold px-6 hover:brightness-110 shrink-0">
+              {t.home.allCategories === 'All categories' ? 'Shop now' : t.home.allCategories} →
+            </button>
           </div>
         </div>
       </section>
+
+      {categories.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 pt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {categories.slice(0, 4).map((c, i) => {
+              const style = TILE_STYLES[i % TILE_STYLES.length];
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCategory(c.slug)}
+                  className="rounded-card p-4 text-left hover:shadow-md transition"
+                  style={{ backgroundColor: style.bg }}
+                >
+                  <p className="font-semibold text-sm" style={{ color: style.text }}>
+                    {c.name}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: style.text }}>
+                    View →
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`btn text-xs px-3 py-1.5 whitespace-nowrap ${
-              !activeCategory ? 'btn-secondary' : 'btn-outline'
+            className={`rounded-full text-xs px-4 py-1.5 whitespace-nowrap transition ${
+              !activeCategory
+                ? 'bg-market-500 text-white'
+                : 'bg-white border border-night/15 text-night/60'
             }`}
           >
             {t.home.allCategories}
@@ -81,8 +117,10 @@ function HomeContent() {
             <button
               key={c.id}
               onClick={() => setActiveCategory(c.slug)}
-              className={`btn text-xs px-3 py-1.5 whitespace-nowrap ${
-                activeCategory === c.slug ? 'btn-secondary' : 'btn-outline'
+              className={`rounded-full text-xs px-4 py-1.5 whitespace-nowrap transition ${
+                activeCategory === c.slug
+                  ? 'bg-market-500 text-white'
+                  : 'bg-white border border-night/15 text-night/60'
               }`}
             >
               {c.name} (
@@ -92,7 +130,6 @@ function HomeContent() {
             </button>
           ))}
         </div>
-
         {(() => {
           const activeParent = categories.find((c) => c.slug === activeCategory);
           if (!activeParent || activeParent.children.length === 0) return null;
@@ -114,7 +151,6 @@ function HomeContent() {
             </div>
           );
         })()}
-
         {loading ? (
           <p className="text-night/50 text-sm">{t.home.searching}</p>
         ) : products.length === 0 ? (

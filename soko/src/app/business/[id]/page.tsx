@@ -2,19 +2,46 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import ProductCard from '@/components/ProductCard';
 import { useTranslation } from '@/components/LanguageProvider';
 
 export default function BusinessPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const [business, setBusiness] = useState<any>(null);
+  const [following, setFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/businesses/${id}`)
       .then((r) => r.json())
       .then(setBusiness);
+
+    fetch(`/api/businesses/${id}/follow`)
+      .then((r) => r.json())
+      .then((data) => {
+        setFollowing(data.following);
+        setFollowerCount(data.followerCount);
+      });
   }, [id]);
+
+  async function toggleFollow() {
+    if (!session) {
+      window.location.href = '/login';
+      return;
+    }
+    setFollowLoading(true);
+    const res = await fetch(`/api/businesses/${id}/follow`, { method: 'POST' });
+    const data = await res.json();
+    setFollowLoading(false);
+    if (res.ok) {
+      setFollowing(data.following);
+      setFollowerCount((c) => (data.following ? c + 1 : c - 1));
+    }
+  }
 
   if (!business) return <div className="max-w-6xl mx-auto px-4 py-16 text-night/50">Loading…</div>;
   if (business.error) return <div className="max-w-6xl mx-auto px-4 py-16">Business not found.</div>;
@@ -31,7 +58,7 @@ export default function BusinessPage() {
               business.name?.[0]?.toUpperCase()
             )}
           </div>
-          <div>
+          <div className="flex-1">
             <div className="flex items-center gap-2">
               <h1 className="font-display text-xl font-bold">{business.name}</h1>
               {business.status === 'VERIFIED' && (
@@ -49,9 +76,22 @@ export default function BusinessPage() {
               <p className="text-sm text-night/70 mt-2 max-w-xl">{business.description}</p>
             )}
           </div>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={toggleFollow}
+              disabled={followLoading}
+              className={
+                following
+                  ? 'btn border border-night/15 bg-white hover:bg-night/5'
+                  : 'btn btn-primary'
+              }
+            >
+              {following ? '✓ Following' : '+ Follow'}
+            </button>
+            <span className="text-xs text-night/50">{followerCount} followers</span>
+          </div>
         </div>
       </div>
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="font-semibold mb-4">
           {business.products.length} {t.business.products}

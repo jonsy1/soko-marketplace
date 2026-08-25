@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -14,6 +13,7 @@ export default function NewProductPage() {
     imageUrl: '',
     categoryId: '',
   });
+  const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +22,25 @@ export default function NewProductPage() {
       .then((r) => r.json())
       .then(setCategories);
   }, []);
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image is too large. Please choose one under 2MB.');
+      return;
+    }
+
+    setError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setForm((f) => ({ ...f, imageUrl: result }));
+      setImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -115,13 +134,20 @@ export default function NewProductPage() {
           </select>
         </div>
         <div>
-          <label className="label">Image URL</label>
+          <label className="label">Product photo</label>
           <input
+            type="file"
+            accept="image/*"
             className="input"
-            placeholder="https://…"
-            value={form.imageUrl}
-            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            onChange={handleImageChange}
           />
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="mt-3 rounded-card border border-night/10 max-h-48 object-cover"
+            />
+          )}
         </div>
         <button className="btn btn-primary w-full" disabled={loading}>
           {loading ? 'Saving…' : 'Add product'}

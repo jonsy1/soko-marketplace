@@ -4,22 +4,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: '#12181B',
-        night: '#0E2A2F',
+        ink: '#0F172A',
+        night: '#0B1F3A',
         market: {
-          50: '#FFF8EC',
-          100: '#FEEBC3',
-          400: '#E8A93A',
-          500: '#D68C2A',
-          600: '#B36E1B',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          400: '#3B82F6',
+          500: '#2563EB',
+          600: '#1D4ED8',
         },
         teal: {
-          50: '#EAF6F4',
-          400: '#2E9E8F',
-          500: '#1E8073',
-          600: '#146157',
+          50: '#ECFEFF',
+          400: '#22D3EE',
+          500: '#0891B2',
+          600: '#0E7490',
         },
-        clay: '#C0552F',
+        clay: '#F59E0B',
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],

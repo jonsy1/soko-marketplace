@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useTranslation } from './LanguageProvider';
 import LanguageToggle from './LanguageToggle';
-import MobileNav from './MobileNav';
 
 export default function NavbarClient({
   role,
@@ -20,12 +19,9 @@ export default function NavbarClient({
   return (
     <header className="bg-night text-market-50 sticky top-0 z-40 relative">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <MobileNav role={role} isLoggedIn={isLoggedIn} />
-          <Link href="/" className="font-display font-bold text-xl tracking-tight">
-            SOKO<span className="text-market-400">.</span>
-          </Link>
-        </div>
+        <Link href="/" className="font-display font-bold text-xl tracking-tight">
+          SOKO<span className="text-market-400">.</span>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
           <Link href="/" className="hover:text-market-400">
@@ -52,7 +48,7 @@ export default function NavbarClient({
         </nav>
 
         <div className="flex items-center gap-3 text-sm">
-          <LanguageToggle className="hidden sm:inline-flex" />
+          <LanguageToggle />
           {isLoggedIn ? (
             <>
               <span className="hidden sm:inline text-market-50/70">
@@ -60,17 +56,20 @@ export default function NavbarClient({
               </span>
               <button
                 onClick={() => signOut({ redirectTo: '/' })}
-                className="btn btn-outline !border-market-50/30 !text-market-50"
+                className="hidden sm:inline-flex btn btn-outline !border-market-50/30 !text-market-50"
               >
                 {t.nav.signOut}
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="btn btn-outline !border-market-50/30 !text-market-50">
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex btn btn-outline !border-market-50/30 !text-market-50"
+              >
                 {t.nav.login}
               </Link>
-              <Link href="/register" className="btn btn-secondary">
+              <Link href="/register" className="hidden sm:inline-flex btn btn-secondary">
                 {t.nav.signup}
               </Link>
             </>

@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
 import { LanguageProvider } from '@/components/LanguageProvider';
 import RegisterSW from '@/components/RegisterSW';
+import BottomNav from '@/components/BottomNav';
 
 export const metadata: Metadata = {
   title: 'Soko — Find any business, any product, anywhere',
@@ -33,13 +34,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LanguageProvider>
             <RegisterSW />
             <Navbar />
-            <main className="min-h-[calc(100vh-64px)]">{children}</main>
-            <footer className="bg-night text-market-50/70 text-sm py-8 mt-16">
+            <main className="min-h-[calc(100vh-64px)] pb-16 md:pb-0">{children}</main>
+            <footer className="hidden md:block bg-night text-market-50/70 text-sm py-8 mt-16">
               <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between gap-2">
                 <span>© {new Date().getFullYear()} Soko Marketplace.</span>
                 <span>Built for businesses across Tanzania — one search, every shop.</span>
               </div>
             </footer>
+            <BottomNav />
           </LanguageProvider>
         </Providers>
       </body>

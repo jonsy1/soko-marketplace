@@ -1,19 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ProductCard from '@/components/ProductCard';
 import { useTranslation } from '@/components/LanguageProvider';
 
 export default function BusinessPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t } = useTranslation();
   const { data: session } = useSession();
   const [business, setBusiness] = useState<any>(null);
   const [following, setFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/businesses/${id}`)
@@ -40,6 +42,26 @@ export default function BusinessPage() {
     if (res.ok) {
       setFollowing(data.following);
       setFollowerCount((c) => (data.following ? c + 1 : c - 1));
+    }
+  }
+
+  async function messageSeller() {
+    if (!session) {
+      window.location.href = '/login';
+      return;
+    }
+    setMessageLoading(true);
+    const res = await fetch('/api/conversations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId: id }),
+    });
+    const data = await res.json();
+    setMessageLoading(false);
+    if (res.ok) {
+      router.push(`/messages/${data.id}`);
+    } else {
+      alert(data.error || 'Could not start conversation.');
     }
   }
 
@@ -76,18 +98,27 @@ export default function BusinessPage() {
               <p className="text-sm text-night/70 mt-2 max-w-xl">{business.description}</p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <button
-              onClick={toggleFollow}
-              disabled={followLoading}
-              className={
-                following
-                  ? 'btn border border-night/15 bg-white hover:bg-night/5'
-                  : 'btn btn-primary'
-              }
-            >
-              {following ? '✓ Following' : '+ Follow'}
-            </button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <button
+                onClick={messageSeller}
+                disabled={messageLoading}
+                className="btn border border-night/15 bg-white hover:bg-night/5"
+              >
+                💬 Message
+              </button>
+              <button
+                onClick={toggleFollow}
+                disabled={followLoading}
+                className={
+                  following
+                    ? 'btn border border-night/15 bg-white hover:bg-night/5'
+                    : 'btn btn-primary'
+                }
+              >
+                {following ? '✓ Following' : '+ Follow'}
+              </button>
+            </div>
             <span className="text-xs text-night/50">{followerCount} followers</span>
           </div>
         </div>

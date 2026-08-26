@@ -113,7 +113,7 @@ export default function BusinessPage() {
                 disabled={messageLoading}
                 className="btn border border-night/15 bg-white hover:bg-night/5"
               >
-                💬 Message
+                Message
               </button>
               <button
                 onClick={toggleFollow}
@@ -124,34 +124,21 @@ export default function BusinessPage() {
                     : 'btn btn-primary'
                 }
               >
-                {following ? '✓ Following' : '+ Follow'}
+                {following ? 'Following' : '+ Follow'}
               </button>
             </div>
             <span className="text-xs text-night/50">{followerCount} followers</span>
           </div>
         </div>
 
-        {hasPin && (
+        {hasPin ? (
           <div className="max-w-6xl mx-auto px-4 pb-6">
             <div className="rounded-card overflow-hidden border border-night/10">
-              <iframe
-                title="Shop location"
-                src={mapEmbedUrl}
-                className="w-full h-48"
-                style={{ border: 0 }}
-                loading="lazy"
-              />
+              <iframe title="Shop location" src={mapEmbedUrl} className="w-full h-48" style={{ border: 0 }} loading="lazy"></iframe>
             </div>
-            
-              href={directionsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary w-full mt-3 justify-center"
-            >
-              🧭 Get Directions to this shop
-            </a>
+            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full mt-3 justify-center">Get Directions to this shop</a>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">

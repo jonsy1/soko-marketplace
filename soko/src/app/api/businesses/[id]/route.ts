@@ -33,7 +33,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const session = await auth();
   const role = (session?.user as any)?.role;
   const data: any = {};
-  for (const field of ['name', 'description', 'location', 'phone', 'offersDelivery', 'logoUrl']) {
+  for (const field of [
+    'name',
+    'description',
+    'location',
+    'phone',
+    'offersDelivery',
+    'logoUrl',
+    'latitude',
+    'longitude',
+  ]) {
     if (body[field] !== undefined) data[field] = body[field];
   }
   if (role === 'ADMIN' && body.status) data.status = body.status;

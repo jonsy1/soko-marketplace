@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 
@@ -9,11 +8,13 @@ export default function BusinessSettingsPage() {
   const [form, setForm] = useState<any>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
 
   useEffect(() => {
     if (!session?.user) return;
     fetch('/api/orders')
-      .then(() => {}) // noop, keeps lint happy about session dependency
+      .then(() => {})
       .catch(() => {});
   }, [session]);
 
@@ -27,6 +28,8 @@ export default function BusinessSettingsPage() {
             name: b.name,
             description: b.description || '',
             location: b.location,
+            latitude: b.latitude || null,
+            longitude: b.longitude || null,
             phone: b.phone,
             offersDelivery: b.offersDelivery,
             logoUrl: b.logoUrl || '',
@@ -34,6 +37,30 @@ export default function BusinessSettingsPage() {
         }
       });
   }, []);
+
+  function useMyLocation() {
+    setLocateError('');
+    if (!navigator.geolocation) {
+      setLocateError('Your browser does not support location.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f: any) => ({
+          ...f,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+        setLocating(false);
+      },
+      () => {
+        setLocateError('Could not get your location. Please allow location access.');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,6 +109,30 @@ export default function BusinessSettingsPage() {
             onChange={(e) => setForm({ ...form, location: e.target.value })}
           />
         </div>
+
+        <div className="bg-market-50 rounded-card p-4 border border-night/10">
+          <label className="label mb-2">Shop pin (for "Get Directions")</label>
+          <button
+            type="button"
+            onClick={useMyLocation}
+            disabled={locating}
+            className="btn border border-night/15 bg-white hover:bg-night/5 w-full"
+          >
+            {locating ? 'Locating…' : '📍 Use my current location'}
+          </button>
+          {locateError && (
+            <p className="text-xs text-clay mt-2">{locateError}</p>
+          )}
+          {form.latitude && form.longitude && (
+            <p className="text-xs text-teal-600 mt-2">
+              ✓ Location pin set ({form.latitude.toFixed(5)}, {form.longitude.toFixed(5)})
+            </p>
+          )}
+          <p className="text-xs text-night/50 mt-2">
+            Stand at your shop when you tap this, so customers can navigate straight to you.
+          </p>
+        </div>
+
         <div>
           <label className="label">Phone / WhatsApp</label>
           <input

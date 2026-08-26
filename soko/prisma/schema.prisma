@@ -58,6 +58,8 @@ model Business {
   description String?
   logoUrl     String?
   location    String
+  latitude    Float?
+  longitude   Float?
   phone       String
   status      BusinessStatus @default(PENDING)
   offersDelivery Boolean     @default(false)

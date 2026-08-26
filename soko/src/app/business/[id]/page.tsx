@@ -68,6 +68,14 @@ export default function BusinessPage() {
   if (!business) return <div className="max-w-6xl mx-auto px-4 py-16 text-night/50">Loading…</div>;
   if (business.error) return <div className="max-w-6xl mx-auto px-4 py-16">Business not found.</div>;
 
+  const hasPin = business.latitude && business.longitude;
+  const mapEmbedUrl = hasPin
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${business.longitude - 0.006}%2C${business.latitude - 0.006}%2C${business.longitude + 0.006}%2C${business.latitude + 0.006}&marker=${business.latitude}%2C${business.longitude}`
+    : '';
+  const directionsUrl = hasPin
+    ? `https://www.google.com/maps/dir/?api=1&destination=${business.latitude},${business.longitude}`
+    : '';
+
   return (
     <div>
       <div className="bg-white border-b border-night/10">
@@ -122,7 +130,30 @@ export default function BusinessPage() {
             <span className="text-xs text-night/50">{followerCount} followers</span>
           </div>
         </div>
+
+        {hasPin && (
+          <div className="max-w-6xl mx-auto px-4 pb-6">
+            <div className="rounded-card overflow-hidden border border-night/10">
+              <iframe
+                title="Shop location"
+                src={mapEmbedUrl}
+                className="w-full h-48"
+                style={{ border: 0 }}
+                loading="lazy"
+              />
+            </div>
+            
+              href={directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary w-full mt-3 justify-center"
+            >
+              🧭 Get Directions to this shop
+            </a>
+          </div>
+        )}
       </div>
+
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="font-semibold mb-4">
           {business.products.length} {t.business.products}

@@ -31,6 +31,11 @@ export default function EditProductPage() {
       });
   }, [id]);
 
+  function removeImage() {
+    setForm((f: any) => ({ ...f, imageUrl: '' }));
+    setImagePreview('');
+  }
+
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -152,11 +157,20 @@ export default function EditProductPage() {
             onChange={handleImageChange}
           />
           {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="mt-3 rounded-card border border-night/10 max-h-48 object-cover"
-            />
+            <div>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="mt-3 rounded-card border border-night/10 max-h-48 object-cover"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="btn btn-outline !text-clay !border-clay/30 text-xs mt-2"
+              >
+                Remove photo
+              </button>
+            </div>
           )}
         </div>
         <button className="btn btn-primary w-full" disabled={loading}>

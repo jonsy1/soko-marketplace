@@ -62,6 +62,7 @@ model Business {
   longitude   Float?
   phone       String
   status      BusinessStatus @default(PENDING)
+  isOpen      Boolean        @default(true)
   offersDelivery Boolean     @default(false)
   createdAt   DateTime       @default(now())
   owner       User           @relation(fields: [ownerId], references: [id])

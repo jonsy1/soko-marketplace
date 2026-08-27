@@ -76,8 +76,18 @@ export default function BusinessPage() {
     ? `https://www.google.com/maps/dir/?api=1&destination=${business.latitude},${business.longitude}`
     : '';
 
+  const isOwner = (session?.user as any)?.id === business.ownerId;
+  const isAdmin = (session?.user as any)?.role === 'ADMIN';
+
   return (
     <div>
+      {(business.status === 'SUSPENDED' || !business.isOpen) && (isOwner || isAdmin) && (
+        <div className="bg-clay/10 text-clay text-sm text-center py-2 px-4">
+          {business.status === 'SUSPENDED'
+            ? 'This shop has been suspended by an admin. It is hidden from customers until reinstated.'
+            : 'This shop is temporarily closed. It is hidden from customers until you reopen it.'}
+        </div>
+      )}
       <div className="bg-white border-b border-night/10">
         <div className="max-w-6xl mx-auto px-4 py-8 flex items-center gap-4">
           <div className="w-16 h-16 rounded-card bg-market-100 flex items-center justify-center font-display text-2xl font-bold text-market-600 overflow-hidden shrink-0">

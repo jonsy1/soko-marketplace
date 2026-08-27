@@ -40,7 +40,12 @@ export async function GET(req: Request) {
     }
   }
   if (businessId) where.businessId = businessId;
-  if (location) where.business = { location: { contains: location } };
+  if (!mine) {
+    where.business = { status: 'VERIFIED', isOpen: true };
+    if (location) where.business.location = { contains: location };
+  } else if (location) {
+    where.business = { location: { contains: location } };
+  }
 
   const products = await prisma.product.findMany({
     where,

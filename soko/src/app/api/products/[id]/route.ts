@@ -11,6 +11,18 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     },
   });
   if (!product) return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
+
+  const hidden = product.business.status === 'SUSPENDED' || !product.business.isOpen;
+  if (hidden) {
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
+    const role = (session?.user as any)?.role;
+    const isOwnerOrAdmin = userId === product.business.ownerId || role === 'ADMIN';
+    if (!isOwnerOrAdmin) {
+      return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
+    }
+  }
+
   return NextResponse.json(product);
 }
 

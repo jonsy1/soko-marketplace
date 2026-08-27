@@ -23,6 +23,18 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     },
   });
   if (!business) return NextResponse.json({ error: 'Business not found.' }, { status: 404 });
+
+  const hidden = business.status === 'SUSPENDED' || !business.isOpen;
+  if (hidden) {
+    const session = await auth();
+    const userId = (session?.user as any)?.id;
+    const role = (session?.user as any)?.role;
+    const isOwnerOrAdmin = userId === business.ownerId || role === 'ADMIN';
+    if (!isOwnerOrAdmin) {
+      return NextResponse.json({ error: 'Business not found.' }, { status: 404 });
+    }
+  }
+
   return NextResponse.json(business);
 }
 
@@ -42,6 +54,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     'logoUrl',
     'latitude',
     'longitude',
+    'isOpen',
   ]) {
     if (body[field] !== undefined) data[field] = body[field];
   }

@@ -33,6 +33,7 @@ export default function BusinessSettingsPage() {
             phone: b.phone,
             offersDelivery: b.offersDelivery,
             logoUrl: b.logoUrl || '',
+            isOpen: b.isOpen,
           });
         }
       });
@@ -157,6 +158,31 @@ export default function BusinessSettingsPage() {
           />
           I offer delivery to customers
         </label>
+
+        <div className={`rounded-card p-4 border ${form.isOpen ? 'bg-market-50 border-night/10' : 'bg-clay/5 border-clay/20'}`}>
+          <label className="label mb-1">Shop status</label>
+          <p className="text-xs text-night/50 mb-3">
+            {form.isOpen
+              ? 'Your shop is visible to customers. Close it if you need to stop selling on Soko for a while — customers won\'t see your shop or products until you reopen it.'
+              : 'Your shop is closed and hidden from customers. Reopen it whenever you\'re ready to sell again.'}
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              const next = !form.isOpen;
+              setForm((f: any) => ({ ...f, isOpen: next }));
+              await fetch(`/api/businesses/${businessId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isOpen: next }),
+              });
+            }}
+            className={form.isOpen ? 'btn btn-outline !text-clay !border-clay/30 w-full' : 'btn btn-primary w-full'}
+          >
+            {form.isOpen ? 'Temporarily close my shop' : 'Reopen my shop'}
+          </button>
+        </div>
+
         <button className="btn btn-primary w-full" disabled={loading}>
           {loading ? 'Saving…' : 'Save changes'}
         </button>

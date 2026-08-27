@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useCart } from './CartContext';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -10,9 +11,11 @@ function formatTZS(n: number) {
 
 export default function ProductCard({ product }: { product: any }) {
   const { data: session } = useSession();
+  const { addItem } = useCart();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     fetch(`/api/products/${product.id}/like`)
@@ -39,6 +42,23 @@ export default function ProductCard({ product }: { product: any }) {
       setLiked(data.liked);
       setLikeCount((c) => (data.liked ? c + 1 : c - 1));
     }
+  }
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.quantity < 1) return;
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl || null,
+      maxQuantity: product.quantity,
+      businessId: product.business?.id,
+      businessName: product.business?.name || '',
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
   }
 
   return (
@@ -84,6 +104,19 @@ export default function ProductCard({ product }: { product: any }) {
             <span className="text-xs text-night/40 ml-auto">{likeCount} ❤️</span>
           )}
         </div>
+        <button
+          onClick={handleAddToCart}
+          disabled={product.quantity < 1}
+          className={`w-full mt-2 text-xs font-semibold rounded-card py-1.5 transition ${
+            added
+              ? 'bg-teal-50 text-teal-600'
+              : product.quantity < 1
+              ? 'bg-night/5 text-night/30'
+              : 'bg-night text-white hover:bg-night/90'
+          }`}
+        >
+          {added ? '✓ Added' : product.quantity < 1 ? 'Out of stock' : '+ Add to cart'}
+        </button>
       </div>
     </Link>
   );

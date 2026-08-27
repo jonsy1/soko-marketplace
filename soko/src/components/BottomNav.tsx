@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from './LanguageProvider';
+import { useCart } from './CartContext';
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -40,12 +41,22 @@ function ShopIcon({ active }: { active: boolean }) {
     </svg>
   );
 }
+function CartIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="20" r="1.4" />
+      <circle cx="17" cy="20" r="1.4" />
+      <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+    </svg>
+  );
+}
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const { count } = useCart();
   const role = (session?.user as any)?.role as string | undefined;
   const isLoggedIn = !!session?.user;
   const shopHref =
@@ -65,13 +76,14 @@ export default function BottomNav() {
   const tabs = [
     { href: '/', label: t.nav.home, icon: HomeIcon, guarded: false },
     { href: '/categories', label: t.nav.categories, icon: GridIcon, guarded: false },
+    { href: '/cart', label: t.nav.cart, icon: CartIcon, guarded: false, badge: count },
     { href: '/orders', label: t.nav.orders, icon: ReceiptIcon, guarded: true },
     { href: shopHref, label: t.nav.myShop, icon: ShopIcon, guarded: true },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-night border-t border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.25)]">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {tabs.map((tab) => {
           const active =
             tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href.split('?')[0]);
@@ -86,11 +98,16 @@ export default function BottomNav() {
               }`}
             >
               <span
-                className={`flex items-center justify-center w-9 h-9 rounded-full transition ${
+                className={`relative flex items-center justify-center w-9 h-9 rounded-full transition ${
                   active ? 'bg-clay/15' : ''
                 }`}
               >
                 <Icon active={active} />
+                {!!tab.badge && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-clay text-white text-[9px] font-bold flex items-center justify-center">
+                    {tab.badge > 9 ? '9+' : tab.badge}
+                  </span>
+                )}
               </span>
               {tab.label}
             </Link>

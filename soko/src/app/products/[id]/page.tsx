@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
+import { useCart } from '@/components/CartContext';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -15,6 +16,7 @@ export default function ProductPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const { addItem } = useCart();
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [delivery, setDelivery] = useState('CUSTOMER_PICKUP');
@@ -22,6 +24,7 @@ export default function ProductPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
@@ -49,6 +52,27 @@ export default function ProductPage() {
       return;
     }
     setSuccess(t.product.orderSuccess);
+  }
+
+  function handleAddToCart() {
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+    addItem(
+      {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl || null,
+        maxQuantity: product.quantity,
+        businessId: product.business.id,
+        businessName: product.business.name,
+      },
+      quantity
+    );
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 1500);
   }
 
   if (!product) return <div className="max-w-5xl mx-auto px-4 py-16 text-night/50">{t.product.loading}</div>;
@@ -132,6 +156,17 @@ export default function ProductPage() {
                   : product.quantity < 1
                   ? t.product.outOfStock
                   : `${t.product.order} · ${formatTZS(product.price * quantity)}`}
+              </button>
+              <button
+                className={`btn w-full border ${
+                  addedToCart
+                    ? 'border-teal-500 bg-teal-50 text-teal-600'
+                    : 'border-night/15 bg-white hover:bg-night/5'
+                }`}
+                disabled={product.quantity < 1}
+                onClick={handleAddToCart}
+              >
+                {addedToCart ? `✓ ${t.product.addedToCart}` : `🛒 ${t.product.addToCart}`}
               </button>
             </>
           )}

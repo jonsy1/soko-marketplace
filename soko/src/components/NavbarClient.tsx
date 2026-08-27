@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useTranslation } from './LanguageProvider';
 import LanguageToggle from './LanguageToggle';
+import { useCart } from './CartContext';
 
 export default function NavbarClient({
   role,
@@ -15,6 +16,7 @@ export default function NavbarClient({
   isLoggedIn: boolean;
 }) {
   const { t } = useTranslation();
+  const { count } = useCart();
 
   return (
     <header className="bg-night text-market-50 sticky top-0 z-40 relative">
@@ -49,6 +51,18 @@ export default function NavbarClient({
 
         <div className="flex items-center gap-3 text-sm">
           <LanguageToggle />
+          <Link href="/cart" className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="20" r="1.4" />
+              <circle cx="17" cy="20" r="1.4" />
+              <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+            </svg>
+            {count > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-clay text-white text-[9px] font-bold flex items-center justify-center">
+                {count > 9 ? '9+' : count}
+              </span>
+            )}
+          </Link>
           {isLoggedIn ? (
             <>
               <span className="hidden sm:inline text-market-50/70">

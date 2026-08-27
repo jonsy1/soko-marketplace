@@ -89,64 +89,73 @@ export default function BusinessPage() {
         </div>
       )}
       <div className="bg-white border-b border-night/10">
-        <div className="max-w-6xl mx-auto px-4 py-8 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-card bg-market-100 flex items-center justify-center font-display text-2xl font-bold text-market-600 overflow-hidden shrink-0">
-            {business.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover" />
-            ) : (
-              business.name?.[0]?.toUpperCase()
-            )}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-xl font-bold">{business.name}</h1>
-              {business.status === 'VERIFIED' && (
-                <span className="badge bg-teal-50 text-teal-600">✓ {t.business.verified}</span>
-              )}
-              {business.status === 'PENDING' && (
-                <span className="badge bg-market-100 text-market-600">{t.business.newSeller}</span>
+        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-card bg-market-100 flex items-center justify-center font-display text-2xl font-bold text-market-600 overflow-hidden shrink-0">
+              {business.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover" />
+              ) : (
+                business.name?.[0]?.toUpperCase()
               )}
             </div>
-            <p className="text-sm text-night/50 mt-1">
-              📍 {business.location} · 📞 {business.phone}
-              {business.offersDelivery && ` · 🚚 ${t.business.deliveryAvailable}`}
-            </p>
-            {business.description && (
-              <p className="text-sm text-night/70 mt-2 max-w-xl">{business.description}</p>
-            )}
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="font-display text-xl font-bold">{business.name}</h1>
+                {business.status === 'VERIFIED' && (
+                  <span className="badge bg-teal-50 text-teal-600">✓ {t.business.verified}</span>
+                )}
+                {business.status === 'PENDING' && (
+                  <span className="badge bg-market-100 text-market-600">{t.business.newSeller}</span>
+                )}
+              </div>
+              <p className="text-sm text-night/50 mt-1">
+                📍 {business.location} · 📞 {business.phone}
+                {business.offersDelivery && ` · 🚚 ${t.business.deliveryAvailable}`}
+              </p>
+              {business.description && (
+                <p className="text-sm text-night/70 mt-2 max-w-xl">{business.description}</p>
+              )}
+              <span className="sm:hidden text-xs text-night/50 mt-2 block">{followerCount} followers</span>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex gap-2">
+
+          <div className="flex sm:flex-col sm:items-end gap-2 sm:shrink-0">
+            <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
               <button
                 onClick={messageSeller}
                 disabled={messageLoading}
-                className="btn border border-night/15 bg-white hover:bg-night/5"
+                className="btn border-2 border-night/15 bg-white hover:bg-night/5 font-semibold justify-center"
               >
-                Message
+                💬 Message
               </button>
               <button
                 onClick={toggleFollow}
                 disabled={followLoading}
                 className={
                   following
-                    ? 'btn border border-night/15 bg-white hover:bg-night/5'
-                    : 'btn btn-primary'
+                    ? 'btn border-2 border-night/15 bg-white hover:bg-night/5 font-semibold justify-center'
+                    : 'btn btn-primary font-semibold justify-center'
                 }
               >
-                {following ? 'Following' : '+ Follow'}
+                {following ? '✓ Following' : '+ Follow'}
               </button>
             </div>
-            <span className="text-xs text-night/50">{followerCount} followers</span>
+            <span className="hidden sm:block text-xs text-night/50">{followerCount} followers</span>
           </div>
         </div>
 
         {hasPin ? (
           <div className="max-w-6xl mx-auto px-4 pb-6">
-            <div className="rounded-card overflow-hidden border border-night/10">
-              <iframe title="Shop location" src={mapEmbedUrl} className="w-full h-48" style={{ border: 0 }} loading="lazy"></iframe>
+            <div className="rounded-card border-2 border-market-200 bg-market-50 p-3">
+              <p className="font-semibold text-sm mb-2">📍 Shop location</p>
+              <div className="rounded-card overflow-hidden border border-night/10">
+                <iframe title="Shop location" src={mapEmbedUrl} className="w-full h-48" style={{ border: 0 }} loading="lazy"></iframe>
+              </div>
+              <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full mt-3 justify-center font-semibold">
+                🧭 Get Directions to this shop
+              </a>
             </div>
-            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full mt-3 justify-center">Get Directions to this shop</a>
           </div>
         ) : null}
       </div>

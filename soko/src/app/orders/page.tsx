@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
+import OrderProgress from '@/components/OrderProgress';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -82,6 +83,7 @@ export default function MyOrdersPage() {
                   <span className={`badge ${STATUS_STYLE[o.status]}`}>{o.status}</span>
                 </div>
               </div>
+              <OrderProgress status={o.status} />
             </div>
           ))}
         </div>

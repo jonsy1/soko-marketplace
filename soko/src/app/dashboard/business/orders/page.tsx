@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import OrderProgress from '@/components/OrderProgress';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -89,6 +90,7 @@ export default function BusinessOrdersPage() {
                   <span className={`badge ${STATUS_STYLE[o.status]}`}>{o.status}</span>
                 </div>
               </div>
+              <OrderProgress status={o.status} />
               {o.status !== 'DELIVERED' && o.status !== 'CANCELLED' && (
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {STATUS_FLOW.filter((s) => s !== o.status).map((s) => (

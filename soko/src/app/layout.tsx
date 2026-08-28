@@ -5,6 +5,7 @@ import Providers from '@/components/Providers';
 import { LanguageProvider } from '@/components/LanguageProvider';
 import RegisterSW from '@/components/RegisterSW';
 import BottomNav from '@/components/BottomNav';
+import PushNotifications from '@/components/PushNotifications';
 
 export const metadata: Metadata = {
   title: 'Soko — Find any business, any product, anywhere',
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <LanguageProvider>
             <RegisterSW />
+            <PushNotifications />
             <Navbar />
             <main className="min-h-[calc(100vh-64px)] pb-16 md:pb-0">{children}</main>
             <footer className="hidden md:block bg-night text-market-50/70 text-sm py-8 mt-16">

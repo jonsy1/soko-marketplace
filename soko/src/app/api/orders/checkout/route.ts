@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { sendPushToUser } from '@/lib/push';
+
+function formatTZS(n: number) {
+  return 'TZS ' + Math.round(n).toLocaleString('en-US');
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -61,6 +66,16 @@ export async function POST(req: Request) {
         where: { id: li.productId },
         data: { quantity: { decrement: li.quantity } },
       });
+    }
+
+    const business = await prisma.business.findUnique({ where: { id: businessId } });
+    if (business) {
+      const itemCount = lineItems.reduce((sum, i) => sum + i.quantity, 0);
+      sendPushToUser(business.ownerId, {
+        title: '🛍️ New order received!',
+        body: `${itemCount} item${itemCount > 1 ? 's' : ''} — ${formatTZS(totalPrice)}`,
+        url: '/dashboard/business/orders',
+      }).catch(() => {});
     }
 
     createdOrders.push(order);

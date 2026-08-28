@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { sendPushToUser } from '@/lib/push';
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const session = await auth();
@@ -28,5 +29,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 
   const updated = await prisma.order.update({ where: { id: params.id }, data: { status } });
+
+  if (status === 'CONFIRMED') {
+    sendPushToUser(order.customerId, {
+      title: '✅ Order confirmed!',
+      body: `${order.business.name} confirmed your order.`,
+      url: '/orders',
+    }).catch(() => {});
+  }
+
   return NextResponse.json(updated);
 }

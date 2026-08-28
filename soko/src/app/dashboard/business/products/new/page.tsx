@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { upload } from '@vercel/blob/client';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function NewProductPage() {
     categoryId: '',
   });
   const [imagePreview, setImagePreview] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,23 +25,30 @@ export default function NewProductPage() {
       .then(setCategories);
   }, []);
 
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Image is too large. Please choose one under 2MB.');
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image is too large. Please choose one under 10MB.');
       return;
     }
 
     setError('');
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setForm((f) => ({ ...f, imageUrl: result }));
-      setImagePreview(result);
-    };
-    reader.readAsDataURL(file);
+    setImagePreview(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      });
+      setForm((f) => ({ ...f, imageUrl: blob.url }));
+    } catch {
+      setError('Could not upload image. Please try again.');
+      setImagePreview('');
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -134,23 +143,31 @@ export default function NewProductPage() {
           </select>
         </div>
         <div>
-          <label className="label">Product photo</label>
+          <label className="label">Product photo (up to 10MB)</label>
           <input
             type="file"
             accept="image/*"
             className="input"
             onChange={handleImageChange}
+            disabled={uploading}
           />
           {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="mt-3 rounded-card border border-night/10 max-h-48 object-cover"
-            />
+            <div className="relative mt-3 inline-block">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="rounded-card border border-night/10 max-h-48 object-cover"
+              />
+              {uploading && (
+                <div className="absolute inset-0 bg-night/40 rounded-card flex items-center justify-center text-white text-xs font-semibold">
+                  Uploading…
+                </div>
+              )}
+            </div>
           )}
         </div>
-        <button className="btn btn-primary w-full" disabled={loading}>
-          {loading ? 'Saving…' : 'Add product'}
+        <button className="btn btn-primary w-full" disabled={loading || uploading}>
+          {loading ? 'Saving…' : uploading ? 'Uploading photo…' : 'Add product'}
         </button>
       </form>
     </div>

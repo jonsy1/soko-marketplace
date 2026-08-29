@@ -62,6 +62,14 @@ export default function ProductCard({ product }: { product: any }) {
     setTimeout(() => setAdded(false), 1500);
   }
 
+  function handleLocateShop(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { latitude, longitude } = product.business || {};
+    if (!latitude || !longitude) return;
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`, '_blank');
+  }
+
   return (
     <Link
       href={`/products/${product.id}`}
@@ -119,6 +127,14 @@ export default function ProductCard({ product }: { product: any }) {
         >
           {added ? '✓ Added' : product.quantity < 1 ? 'Out of stock' : '+ Add to cart'}
         </button>
+        {product.business?.latitude && product.business?.longitude && (
+          <button
+            onClick={handleLocateShop}
+            className="w-full mt-1.5 text-xs font-semibold rounded-card py-1.5 border border-teal-500/40 text-teal-600 hover:bg-teal-50 transition"
+          >
+            📍 Locate shop
+          </button>
+        )}
       </div>
     </Link>
   );

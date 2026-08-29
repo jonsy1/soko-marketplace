@@ -5,6 +5,7 @@ import type { NextAuthConfig } from 'next-auth';
 // Prisma) is added on top of this in src/auth.ts, which only runs in the
 // Node.js runtime (API routes, server components).
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   pages: {
     signIn: '/login',
   },

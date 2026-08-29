@@ -65,9 +65,19 @@ export default function NavbarClient({
           </Link>
           {isLoggedIn ? (
             <>
-              <span className="hidden sm:inline text-market-50/70">
+              <Link
+                href="/account"
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10"
+                title="My Account"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6" />
+                </svg>
+              </Link>
+              <Link href="/account" className="hidden sm:inline text-market-50/70 hover:text-market-50">
                 {t.nav.hi}, {name?.split(' ')[0]}
-              </span>
+              </Link>
               <button
                 onClick={() => signOut({ redirectTo: '/' })}
                 className="hidden sm:inline-flex btn btn-outline !border-market-50/30 !text-market-50"

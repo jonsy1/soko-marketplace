@@ -103,14 +103,13 @@ export default function ProductPage() {
           {product.business.name} · {product.business.location}
         </Link>
         {product.business.latitude && product.business.longitude && (
-          
+          <Link
             href={`https://www.google.com/maps/dir/?api=1&destination=${product.business.latitude},${product.business.longitude}`}
             target="_blank"
-            rel="noopener noreferrer"
             className="ml-3 inline-flex items-center gap-1 text-sm font-semibold border border-teal-500/40 text-teal-600 rounded-full px-3 py-1 hover:bg-teal-50 transition"
           >
             📍 Locate shop
-          </a>
+          </Link>
         )}
         <h1 className="font-display text-2xl font-bold mt-2">{product.name}</h1>
         <p className="text-teal-600 font-bold text-2xl mt-2">{formatTZS(product.price)}</p>

@@ -43,6 +43,10 @@ export default function AccountPage() {
         </p>
       </div>
 
+      <Link href="/account/settings" className="btn btn-outline w-full mb-4">
+        ⚙️ Account settings
+      </Link>
+
       <div className="space-y-3">
         {role === 'BUSINESS' && (
           <Link href="/dashboard/business" className="btn btn-primary w-full">

@@ -19,6 +19,9 @@ export const authConfig: NextAuthConfig = {
       if (trigger === 'update' && session?.role) {
         token.role = session.role;
       }
+      if (trigger === 'update' && session?.name) {
+        token.name = session.name;
+      }
       return token;
     },
     async session({ session, token }) {

@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       deliveryOption: deliveryOption || 'CUSTOMER_PICKUP',
       note,
       items: {
-        create: [{ productId: product.id, quantity, price: product.price }],
+        create: [{ productId: product.id, quantity, price: product.price, costPrice: product.costPrice }],
       },
     },
     include: { items: true },

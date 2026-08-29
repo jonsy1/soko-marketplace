@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'You need a business profile before adding products.' }, { status: 403 });
   }
 
-  const { name, description, price, quantity, imageUrl, categoryId } = await req.json();
+  const { name, description, price, costPrice, quantity, imageUrl, categoryId } = await req.json();
   if (!name || price === undefined || price === null) {
     return NextResponse.json({ error: 'Product name and price are required.' }, { status: 400 });
   }
@@ -80,6 +80,7 @@ export async function POST(req: Request) {
       name,
       description,
       price: parseFloat(price),
+      costPrice: costPrice !== undefined && costPrice !== '' ? parseFloat(costPrice) : null,
       quantity: quantity ? parseInt(quantity) : 0,
       imageUrl,
       categoryId: categoryId || null,

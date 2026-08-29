@@ -50,6 +50,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (body[field] !== undefined) data[field] = body[field];
   }
   if (body.price !== undefined) data.price = parseFloat(body.price);
+  if (body.costPrice !== undefined) data.costPrice = body.costPrice === '' ? null : parseFloat(body.costPrice);
   if (body.quantity !== undefined) data.quantity = parseInt(body.quantity);
 
   const updated = await prisma.product.update({ where: { id: params.id }, data });

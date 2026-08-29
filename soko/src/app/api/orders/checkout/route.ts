@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     include: { business: true },
   });
 
-  const byBusiness: Record<string, { productId: string; quantity: number; price: number }[]> = {};
+  const byBusiness: Record<string, { productId: string; quantity: number; price: number; costPrice: number | null }[]> = {};
 
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId);
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       productId: product.id,
       quantity: item.quantity,
       price: product.price,
+      costPrice: product.costPrice,
     });
   }
 

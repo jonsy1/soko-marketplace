@@ -26,6 +26,7 @@ export default function EditProductPage() {
           name: p.name,
           description: p.description || '',
           price: p.price,
+          costPrice: p.costPrice ?? '',
           quantity: p.quantity,
           imageUrl: p.imageUrl || '',
           categoryId: p.categoryId || '',
@@ -122,16 +123,27 @@ export default function EditProductPage() {
             />
           </div>
           <div>
-            <label className="label">Quantity available</label>
+            <label className="label">Purchase cost (optional)</label>
             <input
               type="number"
               min={0}
               className="input"
-              required
-              value={form.quantity}
-              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+              value={form.costPrice}
+              onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
+              placeholder="What you paid per unit"
             />
           </div>
+        </div>
+        <div>
+          <label className="label">Quantity available</label>
+          <input
+            type="number"
+            min={0}
+            className="input"
+            required
+            value={form.quantity}
+            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+          />
         </div>
         <div>
           <label className="label">Category</label>

@@ -71,6 +71,7 @@ model Business {
   orders      Order[]
   followers   Follow[]
   conversations Conversation[]
+  stockEntries StockEntry[]
 }
 
 model Category {
@@ -88,6 +89,7 @@ model Product {
   name        String
   description String?
   price       Float
+  costPrice   Float?
   quantity    Int      @default(0)
   imageUrl    String?
   active      Boolean  @default(true)
@@ -98,6 +100,19 @@ model Product {
   categoryId  String?
   orderItems  OrderItem[]
   likes       Like[]
+  stockEntries StockEntry[]
+}
+
+model StockEntry {
+  id         String   @id @default(cuid())
+  quantity   Int
+  costPrice  Float
+  note       String?
+  createdAt  DateTime @default(now())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
 }
 
 model Follow {
@@ -163,6 +178,7 @@ model OrderItem {
   id        String  @id @default(cuid())
   quantity  Int
   price     Float
+  costPrice Float?
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   String
   product   Product @relation(fields: [productId], references: [id])

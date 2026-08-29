@@ -34,6 +34,9 @@ export default function BusinessDashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold">My Store</h1>
         <div className="flex gap-2">
+          <Link href="/dashboard/business/stock" className="btn border border-night/15 bg-white hover:bg-night/5">
+            📒 Stock
+          </Link>
           <Link href="/dashboard/business/analytics" className="btn border border-night/15 bg-white hover:bg-night/5">
             📊 Analytics
           </Link>

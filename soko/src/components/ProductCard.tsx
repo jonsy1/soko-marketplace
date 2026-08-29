@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCart } from './CartContext';
@@ -68,11 +69,12 @@ export default function ProductCard({ product }: { product: any }) {
     >
       <div className="aspect-square bg-market-100 flex items-center justify-center overflow-hidden relative">
         {product.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+            className="object-cover group-hover:scale-105 transition"
           />
         ) : (
           <span className="text-market-600 font-display text-3xl font-bold opacity-40">

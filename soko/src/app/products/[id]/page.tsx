@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
 import { useCart } from '@/components/CartContext';
@@ -80,10 +81,16 @@ export default function ProductPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
-      <div className="aspect-square bg-market-100 rounded-card overflow-hidden flex items-center justify-center">
+      <div className="aspect-square bg-market-100 rounded-card overflow-hidden relative flex items-center justify-center">
         {product.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority
+            className="object-cover"
+          />
         ) : (
           <span className="text-market-600 font-display text-6xl font-bold opacity-40">
             {product.name?.[0]?.toUpperCase()}

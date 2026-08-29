@@ -1,7 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useCart } from '@/components/CartContext';
 import { useTranslation } from '@/components/LanguageProvider';
@@ -94,10 +96,9 @@ export default function CartPage() {
       <div className="space-y-3 mb-6">
         {items.map((item) => (
           <div key={item.productId} className="card p-3 flex items-center gap-3">
-            <div className="w-16 h-16 rounded-card bg-market-100 flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-16 h-16 rounded-card bg-market-100 flex items-center justify-center overflow-hidden shrink-0 relative">
               {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                <Image src={item.imageUrl} alt={item.name} fill sizes="64px" className="object-cover" />
               ) : (
                 <span className="text-market-600 font-display text-xl font-bold opacity-40">
                   {item.name?.[0]?.toUpperCase()}

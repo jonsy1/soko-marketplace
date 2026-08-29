@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { upload } from '@vercel/blob/client';
+import { compressImage } from '@/lib/compressImage';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -38,7 +39,8 @@ export default function NewProductPage() {
     setImagePreview(URL.createObjectURL(file));
     setUploading(true);
     try {
-      const blob = await upload(file.name, file, {
+      const compressed = await compressImage(file);
+      const blob = await upload(compressed.name, compressed, {
         access: 'public',
         handleUploadUrl: '/api/upload',
       });

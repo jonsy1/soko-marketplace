@@ -9,8 +9,8 @@ export async function PUT(req: Request) {
   if (!userId) return NextResponse.json({ error: 'You must be logged in.' }, { status: 401 });
 
   const { currentPassword, newPassword } = await req.json();
-  if (!newPassword || newPassword.length < 6) {
-    return NextResponse.json({ error: 'New password must be at least 6 characters.' }, { status: 400 });
+  if (!newPassword || newPassword.length < 8) {
+    return NextResponse.json({ error: 'New password must be at least 8 characters.' }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({ where: { id: userId } });

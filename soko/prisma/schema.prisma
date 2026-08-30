@@ -203,3 +203,11 @@ model PushSubscription {
   auth      String
   createdAt DateTime @default(now())
 }
+
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  identifier String
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, createdAt])
+}

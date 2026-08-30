@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function LoginPage() {
   return (
@@ -27,6 +28,19 @@ function LoginContent() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    const check = await fetch('/api/auth/rate-limit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: form.email, action: 'check' }),
+    }).then((r) => r.json());
+
+    if (!check.allowed) {
+      setLoading(false);
+      setError(`Too many attempts. Please try again in ${check.retryAfterMinutes} minutes.`);
+      return;
+    }
+
     const res = await signIn('credentials', {
       email: form.email,
       password: form.password,
@@ -34,6 +48,11 @@ function LoginContent() {
     });
     setLoading(false);
     if (res?.error) {
+      fetch('/api/auth/rate-limit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, action: 'record' }),
+      }).catch(() => {});
       setError(t.auth.wrongCredentials);
       return;
     }
@@ -83,9 +102,7 @@ function LoginContent() {
         </div>
         <div>
           <label className="label">{t.auth.password}</label>
-          <input
-            type="password"
-            className="input"
+          <PasswordInput
             required
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}

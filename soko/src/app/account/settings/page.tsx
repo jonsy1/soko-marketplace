@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function AccountSettingsPage() {
   const { data: session, status, update } = useSession();
@@ -168,9 +169,7 @@ export default function AccountSettingsPage() {
         {profile.hasPassword && (
           <div>
             <label className="label">Current password (to confirm)</label>
-            <input
-              type="password"
-              className="input"
+            <PasswordInput
               value={emailPassword}
               onChange={(e) => setEmailPassword(e.target.value)}
               required
@@ -195,9 +194,7 @@ export default function AccountSettingsPage() {
         {profile.hasPassword && (
           <div>
             <label className="label">Current password</label>
-            <input
-              type="password"
-              className="input"
+            <PasswordInput
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -206,23 +203,19 @@ export default function AccountSettingsPage() {
         )}
         <div>
           <label className="label">New password</label>
-          <input
-            type="password"
-            className="input"
+          <PasswordInput
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            minLength={6}
+            minLength={8}
             required
           />
         </div>
         <div>
           <label className="label">Confirm new password</label>
-          <input
-            type="password"
-            className="input"
+          <PasswordInput
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            minLength={6}
+            minLength={8}
             required
           />
         </div>

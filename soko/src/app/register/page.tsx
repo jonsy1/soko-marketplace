@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -85,11 +86,9 @@ export default function RegisterPage() {
         </div>
         <div>
           <label className="label">{t.auth.password}</label>
-          <input
-            type="password"
-            className="input"
+          <PasswordInput
             required
-            minLength={6}
+            minLength={8}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />

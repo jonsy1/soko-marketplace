@@ -82,7 +82,15 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-night border-t border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.25)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-night to-[#3B0A6B] border-t border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.25)] overflow-hidden">
+      <svg
+        className="pointer-events-none absolute -left-8 -top-6 opacity-[0.08]"
+        width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="1"
+      >
+        <circle cx="9" cy="20" r="1.4" />
+        <circle cx="17" cy="20" r="1.4" />
+        <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+      </svg>
       <div className="grid grid-cols-5">
         {tabs.map((tab) => {
           const active =

@@ -19,8 +19,16 @@ export default function NavbarClient({
   const { count } = useCart();
 
   return (
-    <header className="bg-night text-market-50 sticky top-0 z-40 relative">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    <header className="bg-gradient-to-r from-night via-[#3B0A6B] to-market-600 text-market-50 sticky top-0 z-40 relative overflow-hidden">
+      <svg
+        className="pointer-events-none absolute -right-6 -top-10 opacity-[0.10] rotate-[-8deg]"
+        width="220" height="220" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="1"
+      >
+        <circle cx="9" cy="20" r="1.4" />
+        <circle cx="17" cy="20" r="1.4" />
+        <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+      </svg>
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4 relative">
         <Link href="/" className="font-display font-bold text-xl tracking-tight">
           SOKO<span className="text-market-400">.</span>
         </Link>

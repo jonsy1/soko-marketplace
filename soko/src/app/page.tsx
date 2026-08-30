@@ -1,6 +1,7 @@
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { useTranslation } from '@/components/LanguageProvider';
 
@@ -53,8 +54,16 @@ function HomeContent() {
 
   return (
     <div>
-      <section className="bg-night text-market-50">
-        <div className="max-w-6xl mx-auto px-4 py-14 md:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-night via-[#3B0A6B] to-market-600 text-market-50">
+        <svg
+          className="pointer-events-none absolute -right-16 top-1/2 -translate-y-1/2 opacity-[0.12] hidden sm:block"
+          width="420" height="420" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="0.6"
+        >
+          <circle cx="9" cy="20" r="1.4" />
+          <circle cx="17" cy="20" r="1.4" />
+          <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+        </svg>
+        <div className="max-w-6xl mx-auto px-4 py-14 md:py-20 relative">
           <p className="text-clay font-semibold text-sm uppercase tracking-wide mb-3">
             {t.home.tagline}
           </p>
@@ -158,9 +167,9 @@ function HomeContent() {
             <p className="font-semibold text-night/70">{t.home.noResultsTitle}</p>
             <p className="text-sm text-night/50 mt-1">
               {t.home.noResultsBody}{' '}
-              <a href="/register-business" className="text-teal-500 font-semibold">
+              <Link href="/register-business" className="text-teal-500 font-semibold">
                 {t.home.openStorefront}
-              </a>
+              </Link>
               .
             </p>
           </div>

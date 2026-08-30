@@ -9,7 +9,7 @@ body {
   @apply inline-flex items-center justify-center rounded-card px-4 py-2 font-semibold text-sm transition;
 }
 .btn-primary {
-  @apply bg-market-500 text-white hover:bg-market-600;
+  @apply bg-gradient-to-r from-teal-400 to-teal-600 text-night font-bold shadow-sm hover:brightness-105;
 }
 .btn-secondary {
   @apply bg-clay text-white hover:brightness-110;

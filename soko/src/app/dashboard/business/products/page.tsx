@@ -10,6 +10,7 @@ function formatTZS(n: number) {
 export default function ManageProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState('');
 
   function load() {
     fetch('/api/products?mine=1')
@@ -37,6 +38,18 @@ export default function ManageProductsPage() {
     load();
   }
 
+  async function copyWhatsAppReply(p: any) {
+    const link = `${window.location.origin}/products/${p.id}`;
+    const message = `Bei ya ${p.name} ni ${formatTZS(p.price)}. Agiza hapa: ${link}`;
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopiedId(p.id);
+      setTimeout(() => setCopiedId(''), 1500);
+    } catch {
+      alert(message);
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-6">
@@ -53,7 +66,7 @@ export default function ManageProductsPage() {
       ) : (
         <div className="card divide-y divide-night/10">
           {products.map((p) => (
-            <div key={p.id} className="p-4 flex items-center gap-4">
+            <div key={p.id} className="p-4 flex flex-wrap items-center gap-4">
               <div className="w-12 h-12 rounded-card bg-market-100 flex items-center justify-center overflow-hidden shrink-0">
                 {p.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -73,7 +86,17 @@ export default function ManageProductsPage() {
               >
                 {p.active ? 'Live' : 'Hidden'}
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => copyWhatsAppReply(p)}
+                  className={`btn text-xs ${
+                    copiedId === p.id
+                      ? 'bg-teal-50 text-teal-600 border border-teal-500/30'
+                      : 'btn-outline'
+                  }`}
+                >
+                  {copiedId === p.id ? '✓ Copied' : '📋 Copy WhatsApp reply'}
+                </button>
                 <Link href={`/dashboard/business/products/${p.id}/edit`} className="btn btn-outline text-xs">
                   Edit
                 </Link>

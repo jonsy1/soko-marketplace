@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getDiscountedPrice, DISCOUNT_RATE } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -40,7 +41,7 @@ export default function ManageProductsPage() {
 
   async function copyWhatsAppReply(p: any) {
     const link = `${window.location.origin}/products/${p.id}`;
-    const message = `Bei ya ${p.name} ni ${formatTZS(p.price)}. Agiza hapa: ${link}`;
+    const message = `Bei ya ${p.name} ni ${formatTZS(getDiscountedPrice(p.price))}. Agiza hapa: ${link}`;
     try {
       await navigator.clipboard.writeText(message);
       setCopiedId(p.id);
@@ -57,6 +58,10 @@ export default function ManageProductsPage() {
         <Link href="/dashboard/business/products/new" className="btn btn-primary">
           + Add product
         </Link>
+      </div>
+
+      <div className="bg-clay/10 text-clay text-sm rounded-card px-4 py-3 mb-6">
+        🎉 Promosheni ya uzinduzi: wateja wanaona punguzo la <strong>{DISCOUNT_RATE * 100}%</strong> kwenye bidhaa zako zote. Bei uliyoweka haijabadilika kwenye mfumo — punguzo linaonekana kwa mnunuzi pekee.
       </div>
 
       {loading ? (
@@ -78,7 +83,7 @@ export default function ManageProductsPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">{p.name}</p>
                 <p className="text-sm text-night/50">
-                  {formatTZS(p.price)} · {p.quantity} in stock
+                  Bei yako: {formatTZS(p.price)} · Mnunuzi anaona: <span className="text-teal-600 font-semibold">{formatTZS(getDiscountedPrice(p.price))}</span> · {p.quantity} in stock
                 </p>
               </div>
               <span

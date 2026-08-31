@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { getDiscountedPrice, DISCOUNT_RATE } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -31,7 +32,7 @@ export async function GET() {
   });
 
   const width = 1080;
-  const rowHeight = 78;
+  const rowHeight = 92;
   const headerHeight = 300;
   const footerHeight = 170;
   const height = headerHeight + Math.max(products.length, 1) * rowHeight + footerHeight;
@@ -40,12 +41,16 @@ export async function GET() {
     .map((p, i) => {
       const y = headerHeight + i * rowHeight;
       const zebra = i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'transparent';
+      const discounted = getDiscountedPrice(p.price);
       return `
         <rect x="60" y="${y}" width="${width - 120}" height="${rowHeight}" fill="${zebra}" rx="14"/>
         <text x="96" y="${y + rowHeight / 2 + 10}" font-family="sans-serif" font-size="30" font-weight="700" fill="#FFFFFF">${escapeXml(
           p.name
         )}</text>
         <text x="${width - 96}" y="${y + rowHeight / 2 + 10}" font-family="sans-serif" font-size="30" font-weight="800" text-anchor="end" fill="#FDE68A">${formatTZS(
+          discounted
+        )}</text>
+        <text x="${width - 96}" y="${y + rowHeight / 2 - 16}" font-family="sans-serif" font-size="18" text-anchor="end" fill="#C4B5FD" text-decoration="line-through">${formatTZS(
           p.price
         )}</text>
       `;
@@ -79,8 +84,7 @@ export async function GET() {
   )}</text>
 
   <rect x="60" y="186" width="300" height="52" rx="26" fill="url(#gold)"/>
-  <text x="115" y="221" font-family="sans-serif" font-size="24" font-weight="800" fill="#2A0E52">BEI ZOTE HAPA</text>
-  <path d="M323 202 l10 12 l10 -12" stroke="#2A0E52" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="90" y="221" font-family="sans-serif" font-size="24" font-weight="800" fill="#2A0E52">PUNGUZO LA ${DISCOUNT_RATE * 100}%</text>
 
   ${rows}
   ${emptyState}

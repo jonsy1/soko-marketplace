@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
 import { useCart } from '@/components/CartContext';
+import { getDiscountedPrice, DISCOUNT_RATE } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -64,7 +65,7 @@ export default function ProductPage() {
       {
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: getDiscountedPrice(product.price),
         imageUrl: product.imageUrl || null,
         maxQuantity: product.quantity,
         businessId: product.business.id,
@@ -78,6 +79,8 @@ export default function ProductPage() {
 
   if (!product) return <div className="max-w-5xl mx-auto px-4 py-16 text-night/50">{t.product.loading}</div>;
   if (product.error) return <div className="max-w-5xl mx-auto px-4 py-16">{t.product.notFound}</div>;
+
+  const discounted = getDiscountedPrice(product.price);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
@@ -112,7 +115,11 @@ export default function ProductPage() {
           </Link>
         )}
         <h1 className="font-display text-2xl font-bold mt-2">{product.name}</h1>
-        <p className="text-teal-600 font-bold text-2xl mt-2">{formatTZS(product.price)}</p>
+        <div className="flex items-center gap-3 mt-2 flex-wrap">
+          <span className="text-teal-600 font-bold text-2xl">{formatTZS(discounted)}</span>
+          <span className="text-night/40 text-base line-through">{formatTZS(product.price)}</span>
+          <span className="badge bg-clay/10 text-clay">-{DISCOUNT_RATE * 100}% OFF</span>
+        </div>
         {product.category && (
           <span className="badge bg-market-100 text-market-600 mt-2">{product.category.name}</span>
         )}
@@ -171,7 +178,7 @@ export default function ProductPage() {
                   ? t.product.placing
                   : product.quantity < 1
                   ? t.product.outOfStock
-                  : `${t.product.order} · ${formatTZS(product.price * quantity)}`}
+                  : `${t.product.order} · ${formatTZS(discounted * quantity)}`}
               </button>
               <button
                 className={`btn w-full border ${

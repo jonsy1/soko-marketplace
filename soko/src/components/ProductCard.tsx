@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCart } from './CartContext';
+import { getDiscountedPrice, DISCOUNT_RATE } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -52,7 +53,7 @@ export default function ProductCard({ product }: { product: any }) {
     addItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: getDiscountedPrice(product.price),
       imageUrl: product.imageUrl || null,
       maxQuantity: product.quantity,
       businessId: product.business?.id,
@@ -101,7 +102,11 @@ export default function ProductCard({ product }: { product: any }) {
       </div>
       <div className="p-3">
         <p className="font-semibold text-sm truncate">{product.name}</p>
-        <p className="text-teal-600 font-bold text-sm mt-0.5">{formatTZS(product.price)}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <span className="text-teal-600 font-bold text-sm">{formatTZS(getDiscountedPrice(product.price))}</span>
+          <span className="text-night/35 text-xs line-through">{formatTZS(product.price)}</span>
+          <span className="badge bg-clay/10 text-clay text-[10px]">-{DISCOUNT_RATE * 100}%</span>
+        </div>
         <div className="flex items-center justify-between mt-2 text-xs text-night/50">
           <span className="truncate">{product.business?.name}</span>
           <span className="truncate">{product.business?.location}</span>

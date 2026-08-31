@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { sendPushToUser } from '@/lib/push';
-import { getDiscountedPrice } from '@/lib/pricing';
 
 export async function GET() {
   const session = await auth();
@@ -51,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Only ${product.quantity} in stock.` }, { status: 400 });
   }
 
-  const sellPrice = getDiscountedPrice(product.price);
+  const sellPrice = product.price;
   const totalPrice = sellPrice * quantity;
 
   const order = await prisma.order.create({

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { getDiscountedPrice, DISCOUNT_RATE } from '@/lib/pricing';
+import { getDisplayOriginalPrice, DISCOUNT_RATE } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -41,17 +41,17 @@ export async function GET() {
     .map((p, i) => {
       const y = headerHeight + i * rowHeight;
       const zebra = i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'transparent';
-      const discounted = getDiscountedPrice(p.price);
+      const wasPrice = getDisplayOriginalPrice(p.price);
       return `
         <rect x="60" y="${y}" width="${width - 120}" height="${rowHeight}" fill="${zebra}" rx="14"/>
         <text x="96" y="${y + rowHeight / 2 + 10}" font-family="sans-serif" font-size="30" font-weight="700" fill="#FFFFFF">${escapeXml(
           p.name
         )}</text>
         <text x="${width - 96}" y="${y + rowHeight / 2 + 10}" font-family="sans-serif" font-size="30" font-weight="800" text-anchor="end" fill="#FDE68A">${formatTZS(
-          discounted
+          p.price
         )}</text>
         <text x="${width - 96}" y="${y + rowHeight / 2 - 16}" font-family="sans-serif" font-size="18" text-anchor="end" fill="#C4B5FD" text-decoration="line-through">${formatTZS(
-          p.price
+          wasPrice
         )}</text>
       `;
     })

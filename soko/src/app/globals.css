@@ -29,3 +29,91 @@ body {
 .badge {
   @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold;
 }
+
+/* ===== 3D Animation Foundation ===== */
+
+/* Perspective container — wraps anything that will tilt/rotate in 3D */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* 3D tilt card — mouse-driven rotateX/rotateY applied via inline style,
+   this class just sets up the smooth transform-origin + easing + depth */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease-out;
+  will-change: transform;
+}
+.tilt-3d:hover {
+  box-shadow: 0 20px 40px -12px rgba(42, 14, 82, 0.35);
+}
+
+/* 3D button press — physical "depress" feel on click */
+.press-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+.press-3d:active {
+  transform: translateZ(-6px) scale(0.96);
+}
+
+/* Add-to-cart success bounce — a little 3D flip-pop */
+@keyframes pop-3d {
+  0% { transform: scale(1) rotateX(0deg); }
+  35% { transform: scale(1.18) rotateX(-18deg); }
+  60% { transform: scale(0.94) rotateX(8deg); }
+  100% { transform: scale(1) rotateX(0deg); }
+}
+.animate-pop-3d {
+  animation: pop-3d 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+}
+
+/* Heart / like — 3D flip pop when toggled on */
+@keyframes heart-pop-3d {
+  0% { transform: scale(1) rotateY(0deg); }
+  40% { transform: scale(1.4) rotateY(180deg); }
+  70% { transform: scale(0.9) rotateY(340deg); }
+  100% { transform: scale(1) rotateY(360deg); }
+}
+.animate-heart-pop {
+  animation: heart-pop-3d 0.5s ease-out;
+  display: inline-block;
+  transform-style: preserve-3d;
+}
+
+/* Page/section entrance — subtle 3D rise, not a flat fade */
+@keyframes rise-3d {
+  0% { opacity: 0; transform: translateY(18px) rotateX(-6deg) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+}
+.animate-rise-3d {
+  animation: rise-3d 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-style: preserve-3d;
+}
+
+/* Staggered grid entrance helper — pair with inline animation-delay */
+.stagger-item {
+  animation: rise-3d 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Skeleton shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(42,14,82,0.06) 25%, rgba(42,14,82,0.12) 37%, rgba(42,14,82,0.06) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Cube-style flip for switching between two faces (used for order status swap etc.) */
+@keyframes flip-in-3d {
+  0% { transform: rotateX(90deg); opacity: 0; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+.animate-flip-in-3d {
+  animation: flip-in-3d 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-style: preserve-3d;
+}

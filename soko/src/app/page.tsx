@@ -1,15 +1,25 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, lazy } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import ProductCard from '@/components/ProductCard';
-import { ProductGridSkeleton } from '@/components/Skeleton';
-import HeroProductsBackground from '@/components/HeroProductsBackground';
+import dynamic from 'next/dynamic';
 import { useTranslation } from '@/components/LanguageProvider';
+import { ProductGridSkeleton } from '@/components/Skeleton';
+
+// Dynamic imports kwa components nzito
+const ProductCard = dynamic(() => import('@/components/ProductCard'), {
+  loading: () => <div className="skeleton h-64 rounded-card" />,
+  ssr: false,
+});
+
+const HeroProductsBackground = dynamic(() => import('@/components/HeroProductsBackground'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gradient-to-br from-night via-[#3B0A6B] to-market-600" />,
+});
 
 export default function HomePage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="h-screen animate-pulse bg-market-50" />}>
       <HomeContent />
     </Suspense>
   );
@@ -32,7 +42,14 @@ function HomeContent() {
   );
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Fetch categories
   useEffect(() => {
     fetch('/api/categories')
       .then((r) => r.json())
@@ -40,33 +57,33 @@ function HomeContent() {
       .catch(() => {});
   }, []);
 
+  // Fetch products with debounce - imeboreshwa
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (activeCategory) params.set('category', activeCategory);
+    
     const timer = setTimeout(() => {
       fetch(`/api/products?${params.toString()}`)
         .then((r) => r.json())
         .then((data) => setProducts(Array.isArray(data) ? data : []))
         .finally(() => setLoading(false));
-    }, 250);
+    }, 300); // Kuongeza debounce kidogo
+
     return () => clearTimeout(timer);
   }, [q, activeCategory]);
 
+  if (!isMounted) {
+    return <div className="h-screen animate-pulse bg-market-50" />;
+  }
+
   return (
     <div>
+      {/* Hero Section - imeboreshwa */}
       <section className="relative overflow-hidden bg-gradient-to-br from-night via-[#3B0A6B] to-market-600 text-market-50">
-        <svg
-          className="pointer-events-none absolute -right-16 top-1/2 -translate-y-1/2 opacity-[0.12] hidden sm:block"
-          width="420" height="420" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="0.6"
-        >
-          <circle cx="9" cy="20" r="1.4" />
-          <circle cx="17" cy="20" r="1.4" />
-          <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
-        </svg>
         <HeroProductsBackground />
-        <div className="max-w-6xl mx-auto px-4 py-14 md:py-20 relative animate-rise-3d">
+        <div className="max-w-6xl mx-auto px-4 py-14 md:py-20 relative">
           <p className="text-clay font-semibold text-sm uppercase tracking-wide mb-3">
             {t.home.tagline}
           </p>
@@ -88,17 +105,18 @@ function HomeContent() {
         </div>
       </section>
 
+      {/* Categories - imeboreshwa with lazy loading */}
       {categories.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 pt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 perspective-1000">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {categories.slice(0, 4).map((c, i) => {
               const style = TILE_STYLES[i % TILE_STYLES.length];
               return (
                 <button
                   key={c.id}
                   onClick={() => setActiveCategory(c.slug)}
-                  className="tilt-3d stagger-item rounded-card p-4 text-left"
-                  style={{ backgroundColor: style.bg, animationDelay: `${i * 60}ms` }}
+                  className="rounded-card p-4 text-left transition hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: style.bg }}
                 >
                   <p className="font-semibold text-sm" style={{ color: style.text }}>
                     {c.name}
@@ -113,6 +131,7 @@ function HomeContent() {
         </section>
       )}
 
+      {/* Products Section */}
       <section className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
           <button
@@ -142,6 +161,7 @@ function HomeContent() {
             </button>
           ))}
         </div>
+
         {(() => {
           const activeParent = categories.find((c) => c.slug === activeCategory);
           if (!activeParent || activeParent.children.length === 0) return null;
@@ -163,10 +183,11 @@ function HomeContent() {
             </div>
           );
         })()}
+
         {loading ? (
           <ProductGridSkeleton count={10} />
         ) : products.length === 0 ? (
-          <div className="text-center py-16 animate-rise-3d">
+          <div className="text-center py-16">
             <p className="font-semibold text-night/70">{t.home.noResultsTitle}</p>
             <p className="text-sm text-night/50 mt-1">
               {t.home.noResultsBody}{' '}
@@ -182,8 +203,8 @@ function HomeContent() {
               {products.length} {t.home.productsFound}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {products.map((p, i) => (
-                <div key={p.id} className="stagger-item" style={{ animationDelay: `${Math.min(i, 10) * 50}ms` }}>
+              {products.map((p) => (
+                <div key={p.id}>
                   <ProductCard product={p} />
                 </div>
               ))}

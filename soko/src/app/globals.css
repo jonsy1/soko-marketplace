@@ -1,10 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Font optimization */
+@layer base {
+  /* Ongeza font-display: swap kwa fonts za Google */
+  @font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 500 700;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+  }
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 600;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  }
+}
+
 body {
   @apply bg-market-50 text-ink font-body;
+  /* Ongeza optimization */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Punguza animations kwenye simu */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Components */
 .btn {
   @apply inline-flex items-center justify-center rounded-card px-4 py-2 font-semibold text-sm transition;
 }
@@ -30,15 +68,14 @@ body {
   @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold;
 }
 
-/* ===== 3D Animation Foundation ===== */
+/* ===== 3D Animation Foundation (Imeboreshwa) ===== */
 
-/* Perspective container — wraps anything that will tilt/rotate in 3D */
+/* Perspective container */
 .perspective-1000 {
   perspective: 1000px;
 }
 
-/* 3D tilt card — mouse-driven rotateX/rotateY applied via inline style,
-   this class just sets up the smooth transform-origin + easing + depth */
+/* Tilt card — imeboreshwa kwa performance */
 .tilt-3d {
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out, box-shadow 0.25s ease-out;
@@ -48,7 +85,7 @@ body {
   box-shadow: 0 20px 40px -12px rgba(42, 14, 82, 0.35);
 }
 
-/* 3D button press — physical "depress" feel on click */
+/* Button press */
 .press-3d {
   transform-style: preserve-3d;
   transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
@@ -57,7 +94,7 @@ body {
   transform: translateZ(-6px) scale(0.96);
 }
 
-/* Add-to-cart success bounce — a little 3D flip-pop */
+/* Pop animation — imeboreshwa */
 @keyframes pop-3d {
   0% { transform: scale(1) rotateX(0deg); }
   35% { transform: scale(1.18) rotateX(-18deg); }
@@ -69,7 +106,7 @@ body {
   transform-style: preserve-3d;
 }
 
-/* Heart / like — 3D flip pop when toggled on */
+/* Heart pop — imeboreshwa */
 @keyframes heart-pop-3d {
   0% { transform: scale(1) rotateY(0deg); }
   40% { transform: scale(1.4) rotateY(180deg); }
@@ -82,7 +119,7 @@ body {
   transform-style: preserve-3d;
 }
 
-/* Page/section entrance — subtle 3D rise, not a flat fade */
+/* Rise animation — imeboreshwa kwa GPU acceleration */
 @keyframes rise-3d {
   0% { opacity: 0; transform: translateY(18px) rotateX(-6deg) scale(0.98); }
   100% { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
@@ -92,23 +129,23 @@ body {
   transform-style: preserve-3d;
 }
 
-/* Staggered grid entrance helper — pair with inline animation-delay */
+/* Staggered items */
 .stagger-item {
   animation: rise-3d 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Skeleton shimmer loading */
+/* Skeleton shimmer — imeboreshwa */
 @keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
 }
 .skeleton {
   background: linear-gradient(90deg, rgba(42,14,82,0.06) 25%, rgba(42,14,82,0.12) 37%, rgba(42,14,82,0.06) 63%);
-  background-size: 800px 100%;
+  background-size: 400px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
-/* Cube-style flip for switching between two faces (used for order status swap etc.) */
+/* Flip animation — imeboreshwa */
 @keyframes flip-in-3d {
   0% { transform: rotateX(90deg); opacity: 0; }
   100% { transform: rotateX(0deg); opacity: 1; }
@@ -118,12 +155,22 @@ body {
   transform-style: preserve-3d;
 }
 
-/* Gentle continuous float for cards "sitting" in 3D space (hero showcase) */
+/* Float animation — imeboreshwa kwa performance */
 @keyframes float-3d {
   0%, 100% { transform: translateY(0) rotateZ(var(--card-rot, 0deg)) rotateY(var(--card-tilt, 0deg)); }
-  50% { transform: translateY(-12px) rotateZ(calc(var(--card-rot, 0deg) + 2deg)) rotateY(calc(var(--card-tilt, 0deg) + 3deg)); }
+  50% { transform: translateY(-8px) rotateZ(calc(var(--card-rot, 0deg) + 1deg)) rotateY(calc(var(--card-tilt, 0deg) + 2deg)); }
 }
 .animate-float-3d {
   animation: float-3d 4.5s ease-in-out infinite;
   transform-style: preserve-3d;
+}
+
+/* Ongeza critical CSS optimization */
+@media (max-width: 768px) {
+  .tilt-3d:hover {
+    box-shadow: none;
+  }
+  .animate-float-3d {
+    animation-duration: 6s;
+  }
 }

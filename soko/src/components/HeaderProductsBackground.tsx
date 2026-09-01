@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
-const SLOT_POSITIONS = ['6%', '24%', '48%', '72%', '92%'];
+const SLOT_POSITIONS = ['12%', '38%', '64%', '90%'];
 
 export default function HeaderProductsBackground() {
   const [images, setImages] = useState<string[]>([]);
-  const [indices, setIndices] = useState<number[]>([0, 1, 2, 3, 4]);
+  const [indices, setIndices] = useState<number[]>([0, 1, 2, 3]);
 
   useEffect(() => {
     fetch('/api/products')
@@ -36,14 +36,14 @@ export default function HeaderProductsBackground() {
   if (images.length === 0) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden perspective-1000 hidden md:block">
+    <div className="pointer-events-none absolute inset-0 overflow-hidden perspective-1000">
       {SLOT_POSITIONS.map((left, slot) => {
         const imgIndex = indices[slot] % images.length;
         const url = images[imgIndex];
         return (
           <div
             key={slot}
-            className="absolute top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl overflow-hidden opacity-[0.18] blur-[0.5px]"
+            className="absolute top-1/2 -translate-y-1/2 w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl overflow-hidden opacity-[0.16] md:opacity-[0.18] blur-[0.5px]"
             style={{ left }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}

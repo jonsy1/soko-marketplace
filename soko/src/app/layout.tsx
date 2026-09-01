@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Providers from '@/components/Providers';
@@ -11,31 +10,24 @@ import RegisterSW from '@/components/RegisterSW';
 import BottomNav from '@/components/BottomNav';
 import PushNotifications from '@/components/PushNotifications';
 
-export const metadata: Metadata = {
-  title: 'Soko — Find any business, any product, anywhere',
-  description:
-    'Soko is a marketplace platform where Tanzanian businesses open a digital storefront and customers discover products from every shop in one search.',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Soko',
-  },
-  icons: {
-    icon: '/icon-192.png',
-    apple: '/apple-touch-icon.png',
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: '#0E2A2F',
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#0E2A2F" />
+        <title>Soko — Find any business, any product, anywhere</title>
+        <meta
+          name="description"
+          content="Soko is a marketplace platform where Tanzanian businesses open a digital storefront and customers discover products from every shop in one search."
+        />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body>
         <Providers>
           <LanguageProvider>

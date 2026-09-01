@@ -151,7 +151,7 @@ export default function NavbarClient({
       <div className={`
         md:hidden bg-gradient-to-b from-[#3B0A6B] to-night border-t border-market-50/10
         transition-all duration-300 overflow-hidden
-        ${isMenuOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}
+        ${isMenuOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}
       `}>
         <div className="px-4 py-4 flex flex-col gap-2">
           {/* Navigation links for mobile */}
@@ -215,6 +215,23 @@ export default function NavbarClient({
               </Link>
             </>
           )}
+
+          {/* Footer Links - Terms, Privacy, About, Contact */}
+          <div className="border-t border-market-50/10 my-2"></div>
+          <div className="flex flex-col gap-2 text-sm text-market-50/60">
+            <Link href="/terms" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+              📜 Terms of Service
+            </Link>
+            <Link href="/privacy" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+              🔒 Privacy Policy
+            </Link>
+            <Link href="/about" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+              ℹ️ About Us
+            </Link>
+            <Link href="/contact" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+              📧 Contact Us
+            </Link>
+          </div>
         </div>
       </div>
     </header>

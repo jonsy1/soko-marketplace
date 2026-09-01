@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from './LanguageProvider';
@@ -24,12 +25,45 @@ export default function NavbarClient({
 }) {
   const { t } = useTranslation();
   const { count } = useCart();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Funga menyu baada ya kubonyeza kiungo
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
+
+  // Handle search submit
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  // Funga search overlay when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isSearchOpen]);
 
   return (
     <header className="bg-gradient-to-r from-night via-[#3B0A6B] to-market-600 text-market-50 sticky top-0 z-40 relative overflow-hidden">
@@ -48,6 +82,19 @@ export default function NavbarClient({
         <Link href="/" className="font-display font-bold text-xl tracking-tight shrink-0">
           SOKO<span className="text-market-400">.</span>
         </Link>
+
+        {/* Search Bar - Desktop */}
+        <div className="hidden md:flex flex-1 max-w-md relative">
+          <form onSubmit={handleSearchSubmit} className="w-full">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full px-4 py-2 text-sm bg-white/10 text-market-50 placeholder-market-50/50 border border-market-50/20 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white/20 transition"
+            />
+          </form>
+        </div>
 
         {/* Navigation ya Desktop */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
@@ -76,10 +123,22 @@ export default function NavbarClient({
 
         {/* Right side - icons na hamburger */}
         <div className="flex items-center gap-2">
-          {/* Language Toggle - inaonekana desktop na simu */}
+          {/* Search icon - mobile */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            aria-label="Search"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </button>
+
+          {/* Language Toggle */}
           <LanguageToggle />
 
-          {/* Cart Icon - inaonekana desktop na simu */}
+          {/* Cart Icon */}
           <Link
             href="/cart"
             className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors shrink-0"
@@ -146,6 +205,41 @@ export default function NavbarClient({
           </button>
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      {isSearchOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-night/95 backdrop-blur-lg flex items-start justify-center pt-20 px-4">
+          <div ref={searchRef} className="w-full max-w-md">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl px-5 py-4 text-lg bg-white/10 text-market-50 placeholder-market-50/50 border border-market-50/20 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white/20 transition"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchQuery('');
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-market-50/50 hover:text-market-50 transition"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </form>
+            <p className="text-market-50/30 text-xs text-center mt-4">
+              Search for products, brands, and categories
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Menu - inajifungua chini ya navbar */}
       <div className={`

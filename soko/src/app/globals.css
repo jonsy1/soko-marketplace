@@ -117,3 +117,13 @@ body {
   animation: flip-in-3d 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-style: preserve-3d;
 }
+
+/* Gentle continuous float for cards "sitting" in 3D space (hero showcase) */
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0) rotateZ(var(--card-rot, 0deg)) rotateY(var(--card-tilt, 0deg)); }
+  50% { transform: translateY(-12px) rotateZ(calc(var(--card-rot, 0deg) + 2deg)) rotateY(calc(var(--card-tilt, 0deg) + 3deg)); }
+}
+.animate-float-3d {
+  animation: float-3d 4.5s ease-in-out infinite;
+  transform-style: preserve-3d;
+}

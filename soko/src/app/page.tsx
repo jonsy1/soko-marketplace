@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { ProductGridSkeleton } from '@/components/Skeleton';
+import HeroProductsBackground from '@/components/HeroProductsBackground';
 import { useTranslation } from '@/components/LanguageProvider';
 
 export default function HomePage() {
@@ -64,6 +65,7 @@ function HomeContent() {
           <circle cx="17" cy="20" r="1.4" />
           <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
         </svg>
+        <HeroProductsBackground />
         <div className="max-w-6xl mx-auto px-4 py-14 md:py-20 relative animate-rise-3d">
           <p className="text-clay font-semibold text-sm uppercase tracking-wide mb-3">
             {t.home.tagline}

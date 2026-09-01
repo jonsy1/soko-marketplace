@@ -5,7 +5,6 @@ import { signOut } from 'next-auth/react';
 import { useTranslation } from './LanguageProvider';
 import LanguageToggle from './LanguageToggle';
 import { useCart } from './CartContext';
-import HeaderProductsBackground from './HeaderProductsBackground';
 
 export default function NavbarClient({
   role,
@@ -29,7 +28,6 @@ export default function NavbarClient({
         <circle cx="17" cy="20" r="1.4" />
         <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
       </svg>
-      <HeaderProductsBackground />
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4 relative">
         <Link href="/" className="font-display font-bold text-xl tracking-tight">
           SOKO<span className="text-market-400">.</span>

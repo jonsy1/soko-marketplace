@@ -12,6 +12,7 @@ export default function ManageProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState('');
+  const [deletingImageId, setDeletingImageId] = useState('');
 
   function load() {
     fetch('/api/products?mine=1')
@@ -37,6 +38,18 @@ export default function ManageProductsPage() {
     if (!confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
     await fetch(`/api/products/${p.id}`, { method: 'DELETE' });
     load();
+  }
+
+  async function deleteImage(p: any) {
+    if (!confirm(`Remove the photo for "${p.name}"?`)) return;
+    setDeletingImageId(p.id);
+    setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, imageUrl: '' } : x)));
+    await fetch(`/api/products/${p.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl: '' }),
+    });
+    setDeletingImageId('');
   }
 
   async function copyWhatsAppReply(p: any) {
@@ -72,10 +85,25 @@ export default function ManageProductsPage() {
         <div className="card divide-y divide-night/10">
           {products.map((p) => (
             <div key={p.id} className="p-4 flex flex-wrap items-center gap-4">
-              <div className="w-12 h-12 rounded-card bg-market-100 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative w-12 h-12 rounded-card bg-market-100 flex items-center justify-center overflow-hidden shrink-0 group">
                 {p.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      key={p.imageUrl}
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="w-full h-full object-cover animate-flip-in-3d"
+                    />
+                    <button
+                      onClick={() => deleteImage(p)}
+                      disabled={deletingImageId === p.id}
+                      title="Delete photo"
+                      className="press-3d absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-clay text-white text-xs font-bold flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 md:opacity-100 transition"
+                    >
+                      ×
+                    </button>
+                  </>
                 ) : (
                   <span className="text-market-600 font-bold">{p.name[0]?.toUpperCase()}</span>
                 )}
@@ -94,7 +122,7 @@ export default function ManageProductsPage() {
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => copyWhatsAppReply(p)}
-                  className={`btn text-xs ${
+                  className={`press-3d btn text-xs ${
                     copiedId === p.id
                       ? 'bg-teal-50 text-teal-600 border border-teal-500/30'
                       : 'btn-outline'
@@ -102,13 +130,13 @@ export default function ManageProductsPage() {
                 >
                   {copiedId === p.id ? '✓ Copied' : '📋 Copy WhatsApp reply'}
                 </button>
-                <Link href={`/dashboard/business/products/${p.id}/edit`} className="btn btn-outline text-xs">
+                <Link href={`/dashboard/business/products/${p.id}/edit`} className="press-3d btn btn-outline text-xs">
                   Edit
                 </Link>
-                <button onClick={() => toggleActive(p)} className="btn btn-outline text-xs">
+                <button onClick={() => toggleActive(p)} className="press-3d btn btn-outline text-xs">
                   {p.active ? 'Hide' : 'Unhide'}
                 </button>
-                <button onClick={() => remove(p)} className="btn btn-outline !text-clay !border-clay/30 text-xs">
+                <button onClick={() => remove(p)} className="press-3d btn btn-outline !text-clay !border-clay/30 text-xs">
                   Delete
                 </button>
               </div>

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { sendPushToUser } from '@/lib/push';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -52,7 +51,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'You must be logged in.' }, { status: 401 });
     }
 
-    // Read body properly
     const body = await req.json();
     const { productId, quantity, deliveryOption, note } = body;
 
@@ -95,20 +93,13 @@ export async function POST(req: Request) {
       include: { items: true },
     });
 
-    // Update product quantity
     await prisma.product.update({
       where: { id: product.id },
       data: { quantity: { decrement: quantity } },
     });
 
-    // Send notification to business owner
-    if (product.business) {
-      await sendPushToUser(product.business.ownerId, {
-        title: '🛍️ New order received!',
-        body: `${quantity}× ${product.name} — ${formatTZS(totalPrice)}`,
-        url: '/dashboard/business/orders',
-      }).catch(() => {});
-    }
+    // Log the order (since push notifications might not be set up)
+    console.log(`✅ Order created: ${order.id} - ${quantity}x ${product.name} (${formatTZS(totalPrice)})`);
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

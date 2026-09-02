@@ -20,29 +20,24 @@ export default function BusinessDashboard() {
       .then((o) => {
         setOrders(Array.isArray(o) ? o : []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [session]);
 
   const today = new Date().toDateString();
   const salesToday = orders
     .filter((o) => new Date(o.createdAt).toDateString() === today && o.status !== 'CANCELLED')
-    .reduce((sum, o) => sum + o.totalPrice, 0);
+    .reduce((sum, o) => sum + (o.totalPrice || o.total || 0), 0);
   const newOrders = orders.filter((o) => o.status === 'NEW').length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10 pb-24 md:pb-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-bold">My Store</h1>
         <div className="flex gap-2">
-          <Link href="/dashboard/business/stock" className="btn border border-night/15 bg-white hover:bg-night/5">
-            📒 Stock
-          </Link>
-          <Link href="/dashboard/business/analytics" className="btn border border-night/15 bg-white hover:bg-night/5">
-            📊 Analytics
-          </Link>
-          <Link href="/dashboard/business/products/new" className="btn btn-primary">
-            + Add product
-          </Link>
+          <Link href="/dashboard/business/stock" className="btn border border-night/15 bg-white hover:bg-night/5">📒 Stock</Link>
+          <Link href="/dashboard/business/analytics" className="btn border border-night/15 bg-white hover:bg-night/5">📊 Analytics</Link>
+          <Link href="/dashboard/business/products/new" className="btn btn-primary">+ Add product</Link>
         </div>
       </div>
 
@@ -62,18 +57,14 @@ export default function BusinessDashboard() {
         <div className="card p-4">
           <p className="text-xs text-night/50 uppercase font-semibold">Products</p>
           <p className="font-display text-xl font-bold mt-1">
-            <Link href="/dashboard/business/products" className="text-teal-600">
-              Manage →
-            </Link>
+            <Link href="/dashboard/business/products" className="text-market-500">Manage →</Link>
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold">Recent orders</h2>
-        <Link href="/dashboard/business/orders" className="text-sm text-teal-600 font-semibold">
-          View all →
-        </Link>
+        <Link href="/dashboard/business/orders" className="text-sm text-market-500 font-semibold">View all →</Link>
       </div>
 
       {loading ? (
@@ -85,14 +76,18 @@ export default function BusinessDashboard() {
           {orders.slice(0, 5).map((o) => (
             <div key={o.id} className="p-4 flex items-center justify-between text-sm">
               <div>
-                <p className="font-semibold">{o.customer?.name}</p>
+                <p className="font-semibold">{o.customer?.name || 'Customer'}</p>
                 <p className="text-night/50">
-                  {o.items.map((i: any) => `${i.quantity}× ${i.product.name}`).join(', ')}
+                  {o.items?.map((i: any) => `${i.quantity}× ${i.product?.name || 'Product'}`).join(', ') || 'No items'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold">{formatTZS(o.totalPrice)}</p>
-                <span className="badge bg-market-100 text-market-600">{o.status}</span>
+                <p className="font-semibold">{formatTZS(o.totalPrice || o.total || 0)}</p>
+                <span className={`badge ${
+                  o.status === 'NEW' ? 'bg-yellow-100 text-yellow-700' :
+                  o.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700' :
+                  'bg-green-100 text-green-700'
+                }`}>{o.status || 'NEW'}</span>
               </div>
             </div>
           ))}

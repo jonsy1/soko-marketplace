@@ -16,14 +16,12 @@ export default function CheckoutPage() {
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
-  // If not logged in, redirect to login
   useEffect(() => {
     if (!session) {
       router.push('/login?return=/checkout');
     }
   }, [session, router]);
 
-  // If cart is empty, redirect to home
   useEffect(() => {
     if (items.length === 0 && session) {
       router.push('/');
@@ -38,7 +36,6 @@ export default function CheckoutPage() {
     setError('');
 
     try {
-      // Send each item as a separate order
       for (const item of items) {
         const res = await fetch('/api/orders', {
           method: 'POST',
@@ -51,28 +48,24 @@ export default function CheckoutPage() {
           }),
         });
 
-        // Check if response is ok
         if (!res.ok) {
-          const text = await res.text();
           let errorMsg = 'Failed to place order';
           try {
-            const data = JSON.parse(text);
+            const data = await res.json();
             errorMsg = data.error || errorMsg;
           } catch {
+            const text = await res.text();
             errorMsg = text || errorMsg;
           }
           throw new Error(errorMsg);
         }
 
-        // Parse response
-        const data = await res.json();
-        console.log('Order created:', data);
+        await res.json();
       }
 
       clearCart();
       router.push('/orders');
     } catch (err: any) {
-      console.error('Order error:', err);
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -80,11 +73,7 @@ export default function CheckoutPage() {
   };
 
   if (!session) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 py-20 text-center">
-        <p className="text-night/60">Redirecting to login...</p>
-      </div>
-    );
+    return <div className="max-w-6xl mx-auto px-4 py-20 text-center text-night/60">Redirecting...</div>;
   }
 
   if (items.length === 0) {
@@ -93,7 +82,7 @@ export default function CheckoutPage() {
         <div className="text-5xl mb-4">🛒</div>
         <h1 className="text-2xl font-bold text-night">Your cart is empty</h1>
         <p className="text-night/50 mt-2">Add some products before checking out.</p>
-        <Link href="/" className="inline-block mt-6 px-6 py-3 bg-night text-white rounded-xl">
+        <Link href="/" className="inline-block mt-6 px-6 py-3 bg-night text-white rounded-xl hover:bg-market-500 transition">
           Continue Shopping
         </Link>
       </div>
@@ -105,9 +94,7 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-bold text-night mb-6">Checkout</h1>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Left: Form */}
         <div>
-          {/* Delivery Method */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-night/60 mb-2">Delivery Method</label>
             <div className="grid grid-cols-2 gap-3">
@@ -136,7 +123,6 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Address (only for delivery) */}
           {deliveryMethod === 'DELIVERY' && (
             <div className="mb-6">
               <label className="block text-sm font-medium text-night/60 mb-1">Delivery Address</label>
@@ -151,7 +137,6 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          {/* Note */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-night/60 mb-1">Order Note (Optional)</label>
             <input
@@ -178,38 +163,25 @@ export default function CheckoutPage() {
           </button>
         </div>
 
-        {/* Right: Order Summary */}
         <div className="bg-market-50 rounded-2xl p-6 h-fit">
           <h2 className="font-semibold text-night mb-4">Order Summary</h2>
 
           <div className="space-y-3">
             {items.map((item) => (
               <div key={item.productId} className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-lg">
-                  📦
-                </div>
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-lg">📦</div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-night">{item.name}</p>
-                  <p className="text-xs text-night/40">
-                    {item.quantity} × TZS {Number(item.price).toLocaleString()}
-                  </p>
+                  <p className="text-xs text-night/40">{item.quantity} × TZS {Number(item.price).toLocaleString()}</p>
                 </div>
-                <p className="font-semibold text-night text-sm">
-                  TZS {Number(item.price * item.quantity).toLocaleString()}
-                </p>
+                <p className="font-semibold text-night text-sm">TZS {Number(item.price * item.quantity).toLocaleString()}</p>
               </div>
             ))}
           </div>
 
           <div className="border-t border-night/10 mt-4 pt-4">
-            <div className="flex justify-between">
-              <span className="text-night/60">Subtotal</span>
-              <span className="font-semibold">TZS {Number(total).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-night/60">Delivery</span>
-              <span className="text-night/60">TZS 0</span>
-            </div>
+            <div className="flex justify-between"><span className="text-night/60">Subtotal</span><span className="font-semibold">TZS {Number(total).toLocaleString()}</span></div>
+            <div className="flex justify-between mt-1"><span className="text-night/60">Delivery</span><span className="text-night/60">TZS 0</span></div>
             <div className="flex justify-between mt-3 pt-3 border-t border-night/10">
               <span className="font-bold text-night">Total</span>
               <span className="font-bold text-night text-lg">TZS {Number(total).toLocaleString()}</span>

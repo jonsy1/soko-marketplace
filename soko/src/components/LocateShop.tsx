@@ -22,6 +22,7 @@ export default function LocateShop({
   const [error, setError] = useState<string | null>(null);
   const [shopLocation, setShopLocation] = useState<{lat: number; lng: number} | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletLoaded = useRef(false);
 
@@ -61,6 +62,7 @@ export default function LocateShop({
     const loadLeaflet = async () => {
       try {
         const L = await import('leaflet');
+        // CSS inaweza kuletwa kwa njia tofauti
         await import('leaflet/dist/leaflet.css');
 
         // Fix marker icon
@@ -104,6 +106,7 @@ export default function LocateShop({
         }
 
         leafletLoaded.current = true;
+        setMapLoaded(true);
 
         return () => {
           map.remove();

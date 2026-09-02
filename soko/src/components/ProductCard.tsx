@@ -13,7 +13,6 @@ interface ProductCardProps {
     imageUrl: string | null;
     category?: { name: string; slug: string } | null;
     business?: { name: string; slug: string } | null;
-    quantity?: number;
   };
 }
 
@@ -27,7 +26,6 @@ export default function ProductCard({ product }: ProductCardProps) {
       productId: product.id,
       name: product.name,
       price: product.price,
-      quantity: 1,
       imageUrl: product.imageUrl || undefined,
     });
     setIsAdded(true);
@@ -57,6 +55,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={() => setIsWishlist(!isWishlist)}
             className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition"
+            aria-label="Wishlist"
           >
             <span className="text-lg">{isWishlist ? '❤️' : '🤍'}</span>
           </button>
@@ -100,6 +99,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 ? 'bg-green-500 text-white'
                 : 'bg-night text-white hover:bg-market-500'
             }`}
+            aria-label="Add to cart"
           >
             {isAdded ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">

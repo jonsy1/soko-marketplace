@@ -11,8 +11,13 @@ interface ProductCardProps {
     name: string;
     price: number;
     imageUrl: string | null;
+    quantity?: number;
     category?: { name: string; slug: string } | null;
-    business?: { name: string; slug: string } | null;
+    business?: { 
+      id: string;
+      name: string; 
+      slug: string;
+    } | null;
   };
 }
 
@@ -22,12 +27,21 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isWishlist, setIsWishlist] = useState(false);
 
   const handleAddToCart = () => {
+    // Default values if business is missing
+    const businessId = product.business?.id || 'unknown';
+    const businessName = product.business?.name || 'Soko Seller';
+    const maxQuantity = product.quantity || 99;
+
     addItem({
       productId: product.id,
       name: product.name,
       price: product.price,
-      imageUrl: product.imageUrl || undefined,
-    });
+      imageUrl: product.imageUrl || null,
+      maxQuantity: maxQuantity,
+      businessId: businessId,
+      businessName: businessName,
+    }, 1);
+    
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };

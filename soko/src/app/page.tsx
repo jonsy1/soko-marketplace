@@ -5,16 +5,12 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/components/LanguageProvider';
 import { ProductGridSkeleton } from '@/components/Skeleton';
+import HeroSlider from '@/components/HeroSlider';
 
 // Dynamic imports
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
   loading: () => <div className="skeleton h-64 rounded-card" />,
   ssr: false,
-});
-
-const HeroProductsBackground = dynamic(() => import('@/components/HeroProductsBackground'), {
-  ssr: false,
-  loading: () => <div className="h-64 bg-gradient-to-br from-night via-[#3B0A6B] to-market-600" />,
 });
 
 export default function HomePage() {
@@ -25,7 +21,7 @@ export default function HomePage() {
   );
 }
 
-// Category icons (emoji/icon)
+// Category icons
 const CATEGORY_ICONS: Record<string, string> = {
   'Agriculture': '🌾',
   'Electronics': '📱',
@@ -104,74 +100,22 @@ function HomeContent() {
     router.push(`/?category=${slug}`);
   };
 
-  const handleShopNow = () => {
-    if (q.trim()) {
-      router.push(`/?q=${encodeURIComponent(q.trim())}`);
-    } else {
-      document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   if (!isMounted) {
     return <div className="h-screen animate-pulse bg-market-50" />;
   }
 
-  // Get icon for category
   const getCategoryIcon = (name: string) => {
     return CATEGORY_ICONS[name] || '📦';
   };
 
   return (
     <div>
-      {/* Hero Section - Premium */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-night via-[#3B0A6B] to-market-600 text-market-50">
-        <HeroProductsBackground />
-        <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 relative">
-          {/* Tagline */}
-          <p className="text-clay font-semibold text-sm uppercase tracking-widest mb-3">
-            {t.home.tagline || 'One Search. Every Shop.'}
-          </p>
-          
-          {/* Headline */}
-          <h1 className="font-display font-bold text-4xl md:text-6xl max-w-3xl leading-tight">
-            {t.home.title || 'Everything you want. One Soko.'}
-          </h1>
-          
-          {/* Subtitle */}
-          <p className="text-market-50/70 mt-4 max-w-xl text-lg">
-            {t.home.subtitle || 'Find any product from any business, in one place.'}
-          </p>
-          
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="mt-8 max-w-2xl flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
-              <input
-                className="w-full rounded-xl px-5 py-3.5 text-ink text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-market-400 transition-shadow focus:shadow-xl bg-white/95 backdrop-blur-sm"
-                placeholder={t.home.searchPlaceholder || 'Search — try "Air Force 1" or "sofa"'}
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-8 py-3.5 bg-clay text-white font-semibold rounded-xl hover:brightness-110 transition-all shrink-0 shadow-lg"
-            >
-              Shop now →
-            </button>
-          </form>
+      {/* HERO SLIDER - HAPA NDIO TUMEONGEZA */}
+      <div className="max-w-6xl mx-auto px-4 pt-4">
+        <HeroSlider />
+      </div>
 
-          {/* Quick categories hint */}
-          <div className="mt-6 flex gap-4 text-xs text-market-50/50">
-            <span>Popular:</span>
-            <span className="hover:text-market-50 cursor-pointer">Phones</span>
-            <span className="hover:text-market-50 cursor-pointer">Sneakers</span>
-            <span className="hover:text-market-50 cursor-pointer">Laptops</span>
-            <span className="hover:text-market-50 cursor-pointer">Perfumes</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section - Premium Grid */}
+      {/* Categories Section */}
       {categories.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between mb-6">
@@ -207,7 +151,6 @@ function HomeContent() {
 
       {/* Products Section */}
       <section id="products-section" className="max-w-6xl mx-auto px-4 py-8">
-        {/* Category filters */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-hide">
           <button
             onClick={() => {
@@ -237,7 +180,6 @@ function HomeContent() {
           ))}
         </div>
 
-        {/* Subcategories */}
         {(() => {
           const activeParent = categories.find((c) => c.slug === activeCategory);
           if (!activeParent || activeParent.children.length === 0) return null;
@@ -260,7 +202,6 @@ function HomeContent() {
           );
         })()}
 
-        {/* Products grid */}
         {loading ? (
           <ProductGridSkeleton count={10} />
         ) : products.length === 0 ? (

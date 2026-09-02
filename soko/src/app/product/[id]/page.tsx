@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/components/CartContext';
+import LocateShop from '@/components/LocateShop';
 
 export default function ProductPage() {
   const params = useParams();
@@ -112,19 +113,32 @@ export default function ProductPage() {
       </nav>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="relative aspect-square rounded-2xl overflow-hidden bg-market-50">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
+        <div>
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-market-50">
+            {product.imageUrl ? (
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-6xl bg-market-100 text-market-300">
+                📦
+              </div>
+            )}
+          </div>
+
+          {/* Locate Shop - Bolt Style */}
+          {product.business && (
+            <LocateShop
+              businessId={product.business.id}
+              businessName={product.business.name}
+              latitude={product.business.latitude || null}
+              longitude={product.business.longitude || null}
+              location={product.business.location}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl bg-market-100 text-market-300">
-              📦
-            </div>
           )}
         </div>
 

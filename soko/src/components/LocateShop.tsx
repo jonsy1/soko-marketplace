@@ -62,8 +62,6 @@ export default function LocateShop({
     const loadLeaflet = async () => {
       try {
         const L = await import('leaflet');
-        // CSS inaweza kuletwa kwa njia tofauti
-        await import('leaflet/dist/leaflet.css');
 
         // Fix marker icon
         delete (L.Icon.Default.prototype as any)._getIconUrl;

@@ -38,7 +38,7 @@ export default function CheckoutPage() {
     setError('');
 
     try {
-      // Send each item as a separate order (or combine if same business)
+      // Send each item as a separate order
       for (const item of items) {
         const res = await fetch('/api/orders', {
           method: 'POST',
@@ -47,19 +47,32 @@ export default function CheckoutPage() {
             productId: item.productId,
             quantity: item.quantity,
             deliveryOption: deliveryMethod,
-            note: note || undefined,
+            note: note || '',
           }),
         });
 
+        // Check if response is ok
         if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Failed to place order');
+          const text = await res.text();
+          let errorMsg = 'Failed to place order';
+          try {
+            const data = JSON.parse(text);
+            errorMsg = data.error || errorMsg;
+          } catch {
+            errorMsg = text || errorMsg;
+          }
+          throw new Error(errorMsg);
         }
+
+        // Parse response
+        const data = await res.json();
+        console.log('Order created:', data);
       }
 
       clearCart();
       router.push('/orders');
     } catch (err: any) {
+      console.error('Order error:', err);
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -88,7 +101,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 pb-24 md:pb-8">
       <h1 className="text-2xl font-bold text-night mb-6">Checkout</h1>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -152,7 +165,7 @@ export default function CheckoutPage() {
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm">
-              {error}
+              ❌ {error}
             </div>
           )}
 

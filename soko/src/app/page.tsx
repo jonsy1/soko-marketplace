@@ -33,18 +33,23 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Computers': '💻',
   'Accessories': '⌚',
   'Sports': '⚽',
+  'Women': '👩',
+  'Men': '👨',
+  'Kids': '🧒',
+  'Health': '💊',
+  'Automotive': '🚗',
+  'Books': '📚',
+  'Music': '🎵',
+  'Toys': '🧸',
+  'Garden': '🌿',
+  'Pets': '🐾',
+  'Office': '📎',
+  'Tools': '🔧',
+  'Bags': '👜',
+  'Shoes': '👟',
+  'Watches': '⌚',
+  'Jewelry': '💍',
 };
-
-const TILE_STYLES = [
-  { bg: '#EFF6FF', text: '#1D4ED8' },
-  { bg: '#FEF3C7', text: '#B45309' },
-  { bg: '#ECFEFF', text: '#0E7490' },
-  { bg: '#FFF7ED', text: '#C2410C' },
-  { bg: '#F3E8FF', text: '#6D28D9' },
-  { bg: '#FCE7F3', text: '#BE185D' },
-  { bg: '#E0F2FE', text: '#0369A1' },
-  { bg: '#D1FAE5', text: '#047857' },
-];
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -100,6 +105,14 @@ function HomeContent() {
     router.push(`/?category=${slug}`);
   };
 
+  const handleShopNow = () => {
+    if (q.trim()) {
+      router.push(`/?q=${encodeURIComponent(q.trim())}`);
+    } else {
+      document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   if (!isMounted) {
     return <div className="h-screen animate-pulse bg-market-50" />;
   }
@@ -110,37 +123,46 @@ function HomeContent() {
 
   return (
     <div>
-      {/* HERO SLIDER - HAPA NDIO TUMEONGEZA */}
+      {/* HERO SLIDER */}
       <div className="max-w-6xl mx-auto px-4 pt-4">
         <HeroSlider />
       </div>
 
-      {/* Categories Section */}
+      {/* CATEGORIES SECTION - KIKUU STYLE */}
       {categories.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-night">Shop by Category</h2>
-            <Link href="/categories" className="text-sm text-market-500 hover:text-market-600 transition">
+            <h2 className="text-xl font-semibold text-night">Categories</h2>
+            <Link href="/categories" className="text-sm text-market-500 hover:text-market-600 transition font-medium">
               View All →
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {categories.slice(0, 8).map((c, i) => {
-              const style = TILE_STYLES[i % TILE_STYLES.length];
+          
+          {/* Category Grid - 2 columns on mobile, 4 on tablet, 6 on desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {categories.slice(0, 12).map((c, i) => {
               const icon = getCategoryIcon(c.name);
+              const productCount = c._count.products + c.children.reduce((sum: number, sub: any) => sum + sub._count.products, 0);
+              
               return (
                 <button
                   key={c.id}
                   onClick={() => handleCategoryClick(c.slug)}
-                  className="group rounded-2xl p-5 text-left transition-all hover:scale-[1.02] active:scale-95 hover:shadow-lg"
-                  style={{ backgroundColor: style.bg }}
+                  className="group relative overflow-hidden rounded-2xl p-4 text-center transition-all hover:scale-[1.03] active:scale-95 bg-white border border-night/5 hover:shadow-lg hover:border-market-200"
                 >
-                  <div className="text-3xl mb-2">{icon}</div>
-                  <p className="font-semibold text-sm" style={{ color: style.text }}>
+                  {/* Icon with bounce effect */}
+                  <div className="text-4xl mb-2 group-hover:scale-110 group-hover:-translate-y-1 transition-transform duration-300">
+                    {icon}
+                  </div>
+                  
+                  {/* Category Name */}
+                  <p className="font-medium text-sm text-night truncate">
                     {c.name}
                   </p>
-                  <p className="text-xs mt-1 opacity-60" style={{ color: style.text }}>
-                    {c._count.products + c.children.reduce((sum: number, sub: any) => sum + sub._count.products, 0)} products
+                  
+                  {/* Product Count */}
+                  <p className="text-xs text-night/40 mt-0.5">
+                    {productCount} items
                   </p>
                 </button>
               );
@@ -149,8 +171,9 @@ function HomeContent() {
         </section>
       )}
 
-      {/* Products Section */}
+      {/* PRODUCTS SECTION */}
       <section id="products-section" className="max-w-6xl mx-auto px-4 py-8">
+        {/* Category filters - scrollable */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-hide">
           <button
             onClick={() => {
@@ -180,6 +203,7 @@ function HomeContent() {
           ))}
         </div>
 
+        {/* Subcategories */}
         {(() => {
           const activeParent = categories.find((c) => c.slug === activeCategory);
           if (!activeParent || activeParent.children.length === 0) return null;
@@ -202,6 +226,7 @@ function HomeContent() {
           );
         })()}
 
+        {/* Products Grid */}
         {loading ? (
           <ProductGridSkeleton count={10} />
         ) : products.length === 0 ? (
@@ -221,6 +246,8 @@ function HomeContent() {
           <>
             <p className="text-sm text-night/50 mb-4">
               {products.length} products found
+              {q && ` for "${q}"`}
+              {activeCategory && ` in ${categories.find(c => c.slug === activeCategory)?.name || ''}`}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {products.map((p) => (

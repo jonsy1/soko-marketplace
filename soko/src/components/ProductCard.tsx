@@ -13,9 +13,9 @@ interface ProductCardProps {
     imageUrl: string | null;
     quantity?: number;
     category?: { name: string; slug: string } | null;
-    business?: { 
+    business?: {
       id: string;
-      name: string; 
+      name: string;
       slug: string;
     } | null;
   };
@@ -27,7 +27,6 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isWishlist, setIsWishlist] = useState(false);
 
   const handleAddToCart = () => {
-    // Default values if business is missing
     const businessId = product.business?.id || 'unknown';
     const businessName = product.business?.name || 'Soko Seller';
     const maxQuantity = product.quantity || 99;
@@ -41,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       businessId: businessId,
       businessName: businessName,
     }, 1);
-    
+
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
@@ -64,7 +63,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Quick action buttons (visible on hover) */}
+        {/* Quick action buttons */}
         <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={() => setIsWishlist(!isWishlist)}
@@ -85,11 +84,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="p-3">
-        {/* Business name */}
+        {/* Business name - clickable link to shop */}
         {product.business && (
-          <p className="text-[10px] text-night/40 uppercase tracking-wider font-medium">
+          <Link
+            href={`/business/${product.business.slug}`}
+            className="text-[10px] text-market-500 uppercase tracking-wider font-medium hover:underline transition"
+          >
             {product.business.name}
-          </p>
+          </Link>
         )}
 
         {/* Product name */}

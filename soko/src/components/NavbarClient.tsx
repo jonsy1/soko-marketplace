@@ -32,6 +32,48 @@ export default function NavbarClient({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Location (GPS) state
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) return;
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=10`
+          );
+          const data = await res.json();
+          const city =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.county ||
+            '';
+          const countryCode = data.address?.country_code
+            ? data.address.country_code.toUpperCase()
+            : '';
+          setLocationLabel(city ? `${city}${countryCode ? `, ${countryCode}` : ''}` : null);
+        } catch {
+          setLocationLabel(null);
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      () => {
+        setLocationLoading(false);
+        setLocationLabel(null);
+      },
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
+  }, []);
+
   // Funga menyu baada ya kubonyeza kiungo
   const handleLinkClick = () => {
     setIsMenuOpen(false);
@@ -66,7 +108,7 @@ export default function NavbarClient({
   }, [isSearchOpen]);
 
   return (
-    <header className="bg-gradient-to-r from-night via-[#3B0A6B] to-market-600 text-market-50 sticky top-0 z-40 relative overflow-hidden">
+    <header className="bg-gradient-to-r from-night via-[#1E3A5F] to-market-600 text-market-50 sticky top-0 z-40 relative overflow-hidden">
       {/* SVG ya background - imefichwa kwenye simu kwa performance */}
       <svg
         className="pointer-events-none absolute -right-6 -top-10 opacity-[0.10] rotate-[-8deg] hidden sm:block"
@@ -77,11 +119,27 @@ export default function NavbarClient({
         <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
       </svg>
 
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4 relative">
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3 relative">
         {/* Logo */}
         <Link href="/" className="font-display font-bold text-xl tracking-tight shrink-0">
           SOKO<span className="text-market-400">.</span>
         </Link>
+
+        {/* Location badge - GPS halisi */}
+        <button
+          type="button"
+          onClick={requestLocation}
+          className="flex items-center gap-1 text-xs sm:text-sm text-market-50/80 hover:text-market-50 transition shrink-0 max-w-[110px] sm:max-w-[160px]"
+          aria-label="Location"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span className="truncate">
+            {locationLoading ? 'Locating…' : locationLabel || 'Set location'}
+          </span>
+        </button>
 
         {/* Search Bar - Desktop */}
         <div className="hidden md:flex flex-1 max-w-md relative">
@@ -243,7 +301,7 @@ export default function NavbarClient({
 
       {/* Mobile Menu - inajifungua chini ya navbar */}
       <div className={`
-        md:hidden bg-gradient-to-b from-[#3B0A6B] to-night border-t border-market-50/10
+        md:hidden bg-gradient-to-b from-[#1E3A5F] to-night border-t border-market-50/10
         transition-all duration-300 overflow-hidden
         ${isMenuOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}
       `}>

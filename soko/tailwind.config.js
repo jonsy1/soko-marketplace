@@ -5,21 +5,27 @@ module.exports = {
     extend: {
       colors: {
         ink: '#0F172A',
-        night: '#2A0E52',
+        night: '#16233D',
         market: {
-          50: '#F1EEFF',
-          100: '#E4DBFF',
-          400: '#7C8CFF',
-          500: '#5B6EF5',
-          600: '#4338CA',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          400: '#60A5FA',
+          500: '#2F6FED',
+          600: '#1D4ED8',
         },
         teal: {
-          50: '#FFF7E6',
-          400: '#FBBF24',
-          500: '#F59E0B',
-          600: '#B45309',
+          50: '#ECFDF5',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#047857',
         },
-        clay: '#EC4899',
+        clay: {
+          DEFAULT: '#F0602E',
+          50: '#FFF1EC',
+          400: '#F97B52',
+          500: '#F0602E',
+          600: '#D8481B',
+        },
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],

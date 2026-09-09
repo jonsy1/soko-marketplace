@@ -11,7 +11,7 @@ import { useCart } from './CartContext';
 // Dynamic import kwa LanguageToggle
 const LanguageToggle = dynamic(() => import('./LanguageToggle'), {
   ssr: false,
-  loading: () => <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse" />,
+  loading: () => <div className="w-9 h-9 rounded-full bg-night/5 animate-pulse" />,
 });
 
 export default function NavbarClient({
@@ -108,31 +108,21 @@ export default function NavbarClient({
   }, [isSearchOpen]);
 
   return (
-    <header className="bg-gradient-to-r from-night via-[#1E3A5F] to-market-600 text-market-50 sticky top-0 z-40 relative overflow-hidden">
-      {/* SVG ya background - imefichwa kwenye simu kwa performance */}
-      <svg
-        className="pointer-events-none absolute -right-6 -top-10 opacity-[0.10] rotate-[-8deg] hidden sm:block"
-        width="220" height="220" viewBox="0 0 24 24" fill="none" stroke="#FDE68A" strokeWidth="1"
-      >
-        <circle cx="9" cy="20" r="1.4" />
-        <circle cx="17" cy="20" r="1.4" />
-        <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
-      </svg>
-
+    <header className="bg-white text-night sticky top-0 z-40 border-b border-night/10">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3 relative">
         {/* Logo */}
-        <Link href="/" className="font-display font-bold text-xl tracking-tight shrink-0">
-          SOKO<span className="text-market-400">.</span>
+        <Link href="/" className="font-display font-bold text-xl tracking-tight shrink-0 text-night">
+          SOKO<span className="text-market-500">.</span>
         </Link>
 
         {/* Location badge - GPS halisi */}
         <button
           type="button"
           onClick={requestLocation}
-          className="flex items-center gap-1 text-xs sm:text-sm text-market-50/80 hover:text-market-50 transition shrink-0 max-w-[110px] sm:max-w-[160px]"
+          className="flex items-center gap-1 text-xs sm:text-sm bg-market-50 text-night/70 hover:text-night rounded-full px-3 py-1.5 transition shrink-0 max-w-[110px] sm:max-w-[160px]"
           aria-label="Location"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-market-500">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -149,31 +139,31 @@ export default function NavbarClient({
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full px-4 py-2 text-sm bg-white/10 text-market-50 placeholder-market-50/50 border border-market-50/20 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white/20 transition"
+              className="w-full rounded-full px-4 py-2 text-sm bg-market-50 text-night placeholder-night/40 border border-night/10 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white transition"
             />
           </form>
         </div>
 
         {/* Navigation ya Desktop */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link href="/" className="hover:text-market-400 transition-colors">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-night/70">
+          <Link href="/" className="hover:text-market-500 transition-colors">
             {t.nav.marketplace}
           </Link>
-          <Link href="/categories" className="hover:text-market-400 transition-colors">
+          <Link href="/categories" className="hover:text-market-500 transition-colors">
             {t.nav.categories}
           </Link>
           {role === 'BUSINESS' && (
-            <Link href="/dashboard/business" className="hover:text-market-400 transition-colors">
+            <Link href="/dashboard/business" className="hover:text-market-500 transition-colors">
               {t.nav.myStore}
             </Link>
           )}
           {role === 'ADMIN' && (
-            <Link href="/dashboard/admin" className="hover:text-market-400 transition-colors">
+            <Link href="/dashboard/admin" className="hover:text-market-500 transition-colors">
               {t.nav.admin}
             </Link>
           )}
           {role === 'CUSTOMER' && (
-            <Link href="/register-business" className="hover:text-market-400 transition-colors">
+            <Link href="/register-business" className="hover:text-market-500 transition-colors">
               {t.nav.sellOnSoko}
             </Link>
           )}
@@ -184,7 +174,7 @@ export default function NavbarClient({
           {/* Search icon - mobile */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-full text-night/60 hover:bg-night/5 transition-colors shrink-0"
             aria-label="Search"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -199,7 +189,7 @@ export default function NavbarClient({
           {/* Cart Icon */}
           <Link
             href="/cart"
-            className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            className="relative flex items-center justify-center w-9 h-9 rounded-full text-night/60 hover:bg-night/5 transition-colors shrink-0"
             aria-label="Cart"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +198,7 @@ export default function NavbarClient({
               <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
             </svg>
             {count > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-clay text-white text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-clay-500 text-white text-[9px] font-bold flex items-center justify-center">
                 {count > 9 ? '9+' : count}
               </span>
             )}
@@ -219,7 +209,7 @@ export default function NavbarClient({
             <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/account"
-                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors shrink-0"
+                className="flex items-center justify-center w-9 h-9 rounded-full text-night/60 hover:bg-night/5 transition-colors shrink-0"
                 aria-label="My Account"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -227,12 +217,12 @@ export default function NavbarClient({
                   <path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6" />
                 </svg>
               </Link>
-              <span className="hidden lg:inline text-market-50/70 text-sm">
+              <span className="hidden lg:inline text-night/50 text-sm">
                 {t.nav.hi}, {name?.split(' ')[0]}
               </span>
               <button
                 onClick={() => signOut({ redirectTo: '/' })}
-                className="hidden lg:inline-flex btn btn-outline !border-market-50/30 !text-market-50 hover:bg-white/10 transition-colors text-xs"
+                className="hidden lg:inline-flex btn btn-outline !border-night/15 !text-night/70 hover:bg-night/5 transition-colors text-xs"
               >
                 {t.nav.signOut}
               </button>
@@ -241,7 +231,7 @@ export default function NavbarClient({
             <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/login"
-                className="btn btn-outline !border-market-50/30 !text-market-50 hover:bg-white/10 transition-colors text-xs"
+                className="btn btn-outline !border-night/15 !text-night/70 hover:bg-night/5 transition-colors text-xs"
               >
                 {t.nav.login}
               </Link>
@@ -254,19 +244,19 @@ export default function NavbarClient({
           {/* Hamburger Menu - inaonekana kwenye simu tu */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden flex flex-col gap-1.5 p-1.5 hover:bg-white/10 rounded-lg transition shrink-0"
+            className="md:hidden flex flex-col gap-1.5 p-1.5 hover:bg-night/5 rounded-lg transition shrink-0"
             aria-label="Toggle menu"
           >
-            <span className={`block w-5 h-0.5 bg-market-50 transition duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-market-50 transition duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-market-50 transition duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Mobile Search Overlay */}
       {isSearchOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-night/95 backdrop-blur-lg flex items-start justify-center pt-20 px-4">
+        <div className="md:hidden fixed inset-0 z-50 bg-white/98 backdrop-blur-lg flex items-start justify-center pt-20 px-4">
           <div ref={searchRef} className="w-full max-w-md">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
@@ -275,7 +265,7 @@ export default function NavbarClient({
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl px-5 py-4 text-lg bg-white/10 text-market-50 placeholder-market-50/50 border border-market-50/20 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white/20 transition"
+                className="w-full rounded-xl px-5 py-4 text-lg bg-market-50 text-night placeholder-night/40 border border-night/10 focus:outline-none focus:ring-2 focus:ring-market-400 focus:bg-white transition"
                 autoFocus
               />
               <button
@@ -284,7 +274,7 @@ export default function NavbarClient({
                   setIsSearchOpen(false);
                   setSearchQuery('');
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-market-50/50 hover:text-market-50 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-night/40 hover:text-night transition"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 6 6 18" />
@@ -292,7 +282,7 @@ export default function NavbarClient({
                 </svg>
               </button>
             </form>
-            <p className="text-market-50/30 text-xs text-center mt-4">
+            <p className="text-night/30 text-xs text-center mt-4">
               Search for products, brands, and categories
             </p>
           </div>
@@ -301,41 +291,41 @@ export default function NavbarClient({
 
       {/* Mobile Menu - inajifungua chini ya navbar */}
       <div className={`
-        md:hidden bg-gradient-to-b from-[#1E3A5F] to-night border-t border-market-50/10
+        md:hidden bg-white border-t border-night/10
         transition-all duration-300 overflow-hidden
         ${isMenuOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}
       `}>
-        <div className="px-4 py-4 flex flex-col gap-2">
+        <div className="px-4 py-4 flex flex-col gap-2 text-night/80">
           {/* Navigation links for mobile */}
-          <Link href="/" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+          <Link href="/" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
             {t.nav.marketplace}
           </Link>
-          <Link href="/categories" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+          <Link href="/categories" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
             {t.nav.categories}
           </Link>
           {role === 'BUSINESS' && (
-            <Link href="/dashboard/business" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/dashboard/business" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
               {t.nav.myStore}
             </Link>
           )}
           {role === 'ADMIN' && (
-            <Link href="/dashboard/admin" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/dashboard/admin" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
               {t.nav.admin}
             </Link>
           )}
           {role === 'CUSTOMER' && (
-            <Link href="/register-business" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/register-business" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
               {t.nav.sellOnSoko}
             </Link>
           )}
 
-          <div className="border-t border-market-50/10 my-2"></div>
+          <div className="border-t border-night/10 my-2"></div>
 
           {/* Cart (mobile) */}
-          <Link href="/cart" className="py-2 hover:text-market-400 transition flex items-center gap-2" onClick={handleLinkClick}>
+          <Link href="/cart" className="py-2 hover:text-market-500 transition flex items-center gap-2" onClick={handleLinkClick}>
             🛒 Cart
             {count > 0 && (
-              <span className="bg-clay text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-clay-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {count}
               </span>
             )}
@@ -344,7 +334,7 @@ export default function NavbarClient({
           {/* My Account / Login / Register (mobile) */}
           {isLoggedIn ? (
             <>
-              <Link href="/account" className="py-2 hover:text-market-400 transition flex items-center gap-2" onClick={handleLinkClick}>
+              <Link href="/account" className="py-2 hover:text-market-500 transition flex items-center gap-2" onClick={handleLinkClick}>
                 👤 {t.nav.hi}, {name?.split(' ')[0]}
               </Link>
               <button
@@ -352,35 +342,35 @@ export default function NavbarClient({
                   handleLinkClick();
                   signOut({ redirectTo: '/' });
                 }}
-                className="py-2 text-left hover:text-market-400 transition flex items-center gap-2"
+                className="py-2 text-left hover:text-market-500 transition flex items-center gap-2"
               >
                 🚪 {t.nav.signOut}
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+              <Link href="/login" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
                 {t.nav.login}
               </Link>
-              <Link href="/register" className="py-2 hover:text-market-400 transition" onClick={handleLinkClick}>
+              <Link href="/register" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
                 {t.nav.signup}
               </Link>
             </>
           )}
 
           {/* Footer Links - Terms, Privacy, About, Contact */}
-          <div className="border-t border-market-50/10 my-2"></div>
-          <div className="flex flex-col gap-2 text-sm text-market-50/60">
-            <Link href="/terms" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+          <div className="border-t border-night/10 my-2"></div>
+          <div className="flex flex-col gap-2 text-sm text-night/50">
+            <Link href="/terms" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
               📜 Terms of Service
             </Link>
-            <Link href="/privacy" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/privacy" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
               🔒 Privacy Policy
             </Link>
-            <Link href="/about" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/about" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
               ℹ️ About Us
             </Link>
-            <Link href="/contact" className="py-1 hover:text-market-400 transition" onClick={handleLinkClick}>
+            <Link href="/contact" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
               📧 Contact Us
             </Link>
           </div>

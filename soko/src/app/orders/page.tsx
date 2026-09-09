@@ -8,16 +8,30 @@ export default function OrdersPage() {
   const { data: session } = useSession();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) return;
-    fetch('/api/orders')
-      .then((res) => res.json())
-      .then((data) => {
+
+    const fetchOrders = async () => {
+      try {
+        setError(null);
+        const res = await fetch('/api/orders');
+        if (!res.ok) {
+          throw new Error(`Failed to fetch orders: ${res.status} ${res.statusText}`);
+        }
+        const data = await res.json();
         setOrders(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        console.error('Error fetching orders:', err);
+        setError(err.message || 'Failed to load orders. Please try again.');
+        setOrders([]);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+
+    fetchOrders();
   }, [session]);
 
   if (!session) {
@@ -40,6 +54,22 @@ export default function OrdersPage() {
             <div key={i} className="h-32 bg-night/10 rounded-2xl"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-20 text-center">
+        <div className="text-5xl mb-4">⚠️</div>
+        <h1 className="text-2xl font-bold text-night">Failed to Load Orders</h1>
+        <p className="text-red-600 mt-2">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-block mt-6 px-6 py-3 bg-night text-white rounded-xl hover:bg-market-500 transition"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -71,7 +101,8 @@ export default function OrdersPage() {
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                 order.status === 'NEW' ? 'bg-yellow-100 text-yellow-700' :
                 order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700' :
-                order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-700' :
+                order.status === 'PROCESSING' ? 'bg-blue-50 text-blue-600' :
+                order.status === 'READY' ? 'bg-purple-100 text-purple-700' :
                 order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
                 'bg-red-100 text-red-700'
               }`}>
@@ -89,6 +120,13 @@ export default function OrdersPage() {
                 </div>
               ))}
             </div>
+            {order.note && (
+              <div className="mt-3 p-2 bg-night/5 rounded-lg border-l-2 border-market-500">
+                <p className="text-xs text-night/60">
+                  <span className="font-semibold">Note/Delivery:</span> {order.note}
+                </p>
+              </div>
+            )}
             <div className="mt-3 pt-3 border-t border-night/5 flex items-center justify-between">
               <p className="font-bold text-night">Total: TZS {Number(order.totalPrice || order.total).toLocaleString()}</p>
               <Link href={`/orders/${order.id}`} className="text-sm text-market-500 hover:text-market-600 transition">

@@ -15,6 +15,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [successCount, setSuccessCount] = useState(0);
 
   useEffect(() => {
     if (!session) {
@@ -34,33 +35,50 @@ export default function CheckoutPage() {
     if (items.length === 0) return;
     setLoading(true);
     setError('');
+    setSuccessCount(0);
 
     try {
-      for (const item of items) {
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            productId: item.productId,
-            quantity: item.quantity,
-            deliveryOption: deliveryMethod,
-            note: note || '',
-          }),
-        });
+      const results = await Promise.allSettled(
+        items.map((item) =>
+          fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: item.productId,
+              quantity: item.quantity,
+              deliveryOption: deliveryMethod === 'PICKUP' ? 'CUSTOMER_PICKUP' : 'SELLER_DELIVERY',
+              address: deliveryMethod === 'DELIVERY' ? address : null,
+              note: note || '',
+            }),
+          }).then(async (res) => {
+            if (!res.ok) {
+              let errorMsg = 'Failed to place order';
+              try {
+                const data = await res.json();
+                errorMsg = data.error || errorMsg;
+              } catch {
+                const text = await res.text();
+                errorMsg = text || errorMsg;
+              }
+              throw new Error(errorMsg);
+            }
+            return res.json();
+          })
+        )
+      );
 
-        if (!res.ok) {
-          let errorMsg = 'Failed to place order';
-          try {
-            const data = await res.json();
-            errorMsg = data.error || errorMsg;
-          } catch {
-            const text = await res.text();
-            errorMsg = text || errorMsg;
-          }
-          throw new Error(errorMsg);
-        }
+      const successful = results.filter((r) => r.status === 'fulfilled');
+      const failed = results.filter((r) => r.status === 'rejected');
 
-        await res.json();
+      setSuccessCount(successful.length);
+
+      if (failed.length > 0) {
+        const errorMessages = failed
+          .map((f: any) => f.reason?.message || 'Unknown error')
+          .join(', ');
+        throw new Error(
+          `${successful.length}/${items.length} orders placed. Failed: ${errorMessages}`
+        );
       }
 
       clearCart();
@@ -125,7 +143,7 @@ export default function CheckoutPage() {
 
           {deliveryMethod === 'DELIVERY' && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-night/60 mb-1">Delivery Address</label>
+              <label className="block text-sm font-medium text-night/60 mb-1">Delivery Address *</label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
@@ -134,6 +152,9 @@ export default function CheckoutPage() {
                 rows={3}
                 required
               />
+              {!address.trim() && deliveryMethod === 'DELIVERY' && (
+                <p className="text-xs text-red-600 mt-1">⚠️ Delivery address is required</p>
+              )}
             </div>
           )}
 

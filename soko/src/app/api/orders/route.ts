@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { productId, quantity, deliveryOption, note } = body;
+    const { productId, quantity, deliveryOption, note, address } = body;
 
     if (!productId || !quantity) {
       return NextResponse.json({ error: 'Product and quantity are required.' }, { status: 400 });
@@ -73,13 +73,19 @@ export async function POST(req: Request) {
     const sellPrice = product.price;
     const totalPrice = sellPrice * quantity;
 
+    // Combine note and address for delivery option
+    let finalNote = note || '';
+    if (deliveryOption === 'SELLER_DELIVERY' && address) {
+      finalNote = address + (note ? `\n\nSpecial instructions: ${note}` : '');
+    }
+
     const order = await prisma.order.create({
       data: {
         customerId: userId,
         businessId: product.businessId,
         totalPrice,
         deliveryOption: deliveryOption || 'CUSTOMER_PICKUP',
-        note: note || null,
+        note: finalNote || null,
         status: 'NEW',
         items: {
           create: [{ 
@@ -98,8 +104,9 @@ export async function POST(req: Request) {
       data: { quantity: { decrement: quantity } },
     });
 
-    // Log the order (since push notifications might not be set up)
-    console.log(`✅ Order created: ${order.id} - ${quantity}x ${product.name} (${formatTZS(totalPrice)})`);
+    // Log the order with delivery info
+    const deliveryInfo = deliveryOption === 'SELLER_DELIVERY' && address ? ` - Delivery to: ${address.substring(0, 50)}...` : '';
+    console.log(`✅ Order created: ${order.id} - ${quantity}x ${product.name} (${formatTZS(totalPrice)})${deliveryInfo}`);
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

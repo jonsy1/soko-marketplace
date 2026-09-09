@@ -155,7 +155,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Price */}
         <div className="flex items-center justify-between mt-1.5">
-          <p className="font-bold text-night text-base">
+          <p className="font-bold text-clay-500 text-base">
             TZS {Number(product.price).toLocaleString()}
           </p>
 

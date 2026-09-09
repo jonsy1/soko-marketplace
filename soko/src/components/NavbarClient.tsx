@@ -32,48 +32,6 @@ export default function NavbarClient({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Location (GPS) state
-  const [locationLabel, setLocationLabel] = useState<string | null>(null);
-  const [locationLoading, setLocationLoading] = useState(false);
-
-  const requestLocation = () => {
-    if (!navigator.geolocation) return;
-    setLocationLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=10`
-          );
-          const data = await res.json();
-          const city =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            data.address?.county ||
-            '';
-          const countryCode = data.address?.country_code
-            ? data.address.country_code.toUpperCase()
-            : '';
-          setLocationLabel(city ? `${city}${countryCode ? `, ${countryCode}` : ''}` : null);
-        } catch {
-          setLocationLabel(null);
-        } finally {
-          setLocationLoading(false);
-        }
-      },
-      () => {
-        setLocationLoading(false);
-        setLocationLabel(null);
-      },
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
-  };
-
-  useEffect(() => {
-    requestLocation();
-  }, []);
-
   // Funga menyu baada ya kubonyeza kiungo
   const handleLinkClick = () => {
     setIsMenuOpen(false);
@@ -114,22 +72,6 @@ export default function NavbarClient({
         <Link href="/" className="font-display font-bold text-xl tracking-tight shrink-0 text-night">
           SOKO<span className="text-market-500">.</span>
         </Link>
-
-        {/* Location badge - GPS halisi */}
-        <button
-          type="button"
-          onClick={requestLocation}
-          className="flex items-center gap-1 text-xs sm:text-sm bg-market-50 text-night/70 hover:text-night rounded-full px-3 py-1.5 transition shrink-0 max-w-[110px] sm:max-w-[160px]"
-          aria-label="Location"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-market-500">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          <span className="truncate">
-            {locationLoading ? 'Locating…' : locationLabel || 'Set location'}
-          </span>
-        </button>
 
         {/* Search Bar - Desktop */}
         <div className="hidden md:flex flex-1 max-w-md relative">

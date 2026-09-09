@@ -74,67 +74,130 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10">
-      <h1 className="font-display text-2xl font-bold mb-6">Add a product</h1>
-      <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-        {error && <div className="text-sm bg-clay/10 text-clay px-3 py-2 rounded-card">{error}</div>}
+    <div className="max-w-lg mx-auto px-4 py-8 pb-24">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl font-bold text-night">List an item</h1>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-9 h-9 rounded-full bg-night/5 hover:bg-night/10 flex items-center justify-center text-night/60 transition"
+          aria-label="Close"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="text-sm bg-clay-50 text-clay-600 px-3 py-2 rounded-card">{error}</div>
+        )}
+
+        {/* Photo */}
         <div>
-          <label className="label">Product name</label>
+          <label className="label text-night font-semibold">Add photo</label>
+          <p className="text-xs text-night/50 mb-3">One photo per listing</p>
+          <label
+            htmlFor="product-photo"
+            className="relative flex w-32 h-32 items-center justify-center rounded-2xl border-2 border-dashed border-night/15 bg-white overflow-hidden cursor-pointer hover:border-market-400 transition"
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <span className="flex flex-col items-center gap-1 text-market-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span className="text-xs font-medium">Add photo</span>
+              </span>
+            )}
+            {uploading && (
+              <div className="absolute inset-0 bg-night/40 flex items-center justify-center text-white text-xs font-semibold">
+                Uploading…
+              </div>
+            )}
+            <input
+              id="product-photo"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+              disabled={uploading}
+            />
+          </label>
+        </div>
+
+        {/* Name */}
+        <div>
+          <label className="label text-night font-semibold">Product name</label>
           <input
-            className="input"
+            className="input rounded-xl"
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </div>
+
+        {/* Description */}
         <div>
-          <label className="label">Description</label>
+          <label className="label text-night font-semibold">Description</label>
           <textarea
-            className="input"
+            className="input rounded-xl"
             rows={3}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">Price (TZS)</label>
+
+        {/* Price */}
+        <div>
+          <label className="label text-night font-semibold">Price</label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-night/40 text-sm font-medium">
+              TZS
+            </span>
             <input
               type="number"
               min={0}
-              className="input"
+              className="input rounded-xl pl-14 text-lg font-semibold text-clay-500"
               required
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Purchase cost (optional)</label>
+            <label className="label text-night font-semibold">Purchase cost</label>
             <input
               type="number"
               min={0}
-              className="input"
+              className="input rounded-xl"
               value={form.costPrice}
               onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
-              placeholder="What you paid per unit"
+              placeholder="Optional"
+            />
+          </div>
+          <div>
+            <label className="label text-night font-semibold">Quantity</label>
+            <input
+              type="number"
+              min={0}
+              className="input rounded-xl"
+              required
+              value={form.quantity}
+              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
             />
           </div>
         </div>
+
+        {/* Category */}
         <div>
-          <label className="label">Quantity available</label>
-          <input
-            type="number"
-            min={0}
-            className="input"
-            required
-            value={form.quantity}
-            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="label">Category</label>
+          <label className="label text-night font-semibold">Category</label>
           <select
-            className="input"
+            className="input rounded-xl"
             value={form.categoryId}
             onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
           >
@@ -156,32 +219,17 @@ export default function NewProductPage() {
             )}
           </select>
         </div>
-        <div>
-          <label className="label">Product photo (up to 10MB)</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="input"
-            onChange={handleImageChange}
-            disabled={uploading}
-          />
-          {imagePreview && (
-            <div className="relative mt-3 inline-block">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="rounded-card border border-night/10 max-h-48 object-cover"
-              />
-              {uploading && (
-                <div className="absolute inset-0 bg-night/40 rounded-card flex items-center justify-center text-white text-xs font-semibold">
-                  Uploading…
-                </div>
-              )}
-            </div>
-          )}
+
+        <div className="bg-teal-50 text-teal-600 text-sm rounded-xl px-4 py-3 flex items-start gap-2">
+          <span>✅</span>
+          <span>Buyers trust listings with clear photos and full details. Fill in as much as you can.</span>
         </div>
-        <button className="btn btn-primary w-full" disabled={loading || uploading}>
-          {loading ? 'Saving…' : uploading ? 'Uploading photo…' : 'Add product'}
+
+        <button
+          className="w-full bg-market-500 hover:bg-market-600 text-white font-semibold rounded-xl py-3.5 transition disabled:opacity-60"
+          disabled={loading || uploading}
+        >
+          {loading ? 'Saving…' : uploading ? 'Uploading photo…' : 'Publish listing'}
         </button>
       </form>
     </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface ContactSellerModalProps {
   business: {
     name: string;
@@ -37,7 +39,13 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
           {business.logoUrl ? (
             <img src={business.logoUrl} alt={business.name} className="w-full h-48 object-cover" />
           ) : (
-            <div className="w-full h-48 bg-market-50 flex items-center justify-center text-5xl">🏪</div>
+            <div className="w-full h-48 bg-market-50 flex items-center justify-center text-market-300">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 9l1.5-5h15L21 9" />
+                <path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" />
+                <path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9" />
+              </svg>
+            </div>
           )}
           <button
             onClick={onClose}
@@ -78,7 +86,7 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
 
           {/* Action buttons */}
           <div className="grid grid-cols-2 gap-3 mt-5">
-            
+            <Link
               href={`https://wa.me/${waNumber}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -88,8 +96,8 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
                 <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.8c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 3.9 3.4.5.2 1 .4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z" />
               </svg>
               WhatsApp
-            </a>
-            
+            </Link>
+            <Link
               href={`tel:${business.phone}`}
               className="flex items-center justify-center gap-2 bg-market-500 hover:bg-market-600 text-white font-semibold rounded-xl py-3 transition text-sm"
             >
@@ -98,30 +106,29 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
                 <path d="M11 18h2" />
               </svg>
               Call shop
-            </a>
-            
+            </Link>
+            <Link
               href={`sms:${business.phone}`}
               className="flex items-center justify-center gap-2 border border-night/15 text-night/70 hover:bg-night/5 font-semibold rounded-xl py-3 transition text-sm"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 2 11 13" />
-                <path d="M22 2 15 22l-4-9-9-4 20-7z" />
+                <path d="M4 4h16v12H7l-3 3V4z" />
               </svg>
               Text message
-            </a>
+            </Link>
             {directionsUrl ? (
-              
+              <Link
                 href={directionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 bg-clay-500 hover:bg-clay-600 text-white font-semibold rounded-xl py-3 transition text-sm"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 2 11 13" />
-                  <path d="M22 2 15 22l-4-9-9-4 20-7z" />
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
                 Get directions
-              </a>
+              </Link>
             ) : (
               <div />
             )}

@@ -49,6 +49,7 @@ model User {
   likes         Like[]
   conversations       Conversation[]        @relation("CustomerConversations")
   conversationMessages ConversationMessage[]
+  reviews               Review[]
 }
 
 model Business {
@@ -72,6 +73,7 @@ model Business {
   followers   Follow[]
   conversations Conversation[]
   stockEntries StockEntry[]
+  reviews     Review[]
 }
 
 model Category {
@@ -210,4 +212,18 @@ model LoginAttempt {
   createdAt  DateTime @default(now())
 
   @@index([identifier, createdAt])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+
+  @@unique([businessId, customerId])
 }

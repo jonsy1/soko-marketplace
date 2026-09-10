@@ -183,11 +183,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Contact Seller */}
+        {/* Contact Seller - button ya bluu */}
         {product.business?.phone && (
           <button
             onClick={() => setShowContact(true)}
-            className="mt-2 w-full flex items-center justify-center gap-2 text-xs text-market-500 hover:text-market-600 transition py-1.5 border-t border-night/5 pt-2"
+            className="mt-2 w-full flex items-center justify-center gap-2 text-xs font-semibold text-white bg-market-500 hover:bg-market-600 transition py-2 rounded-xl"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />

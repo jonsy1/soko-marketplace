@@ -25,6 +25,7 @@ interface ProductCardProps {
       logoUrl?: string | null;
       description?: string | null;
       isOpen?: boolean;
+      reviews?: { rating: number }[];
     } | null;
   };
 }
@@ -36,6 +37,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [distance, setDistance] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const [showContact, setShowContact] = useState(false);
+
+  const reviews = product.business?.reviews || [];
+  const reviewCount = reviews.length;
+  const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0;
 
   // Get user location
   useEffect(() => {
@@ -136,14 +141,24 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="p-3">
-        {/* Business name */}
+        {/* Business name + rating */}
         {product.business && (
-          <Link
-            href={`/business/${product.business.slug}`}
-            className="text-[10px] text-market-500 uppercase tracking-wider font-medium hover:underline transition"
-          >
-            {product.business.name}
-          </Link>
+          <div className="flex items-center justify-between gap-2">
+            <Link
+              href={`/business/${product.business.slug}`}
+              className="text-[10px] text-market-500 uppercase tracking-wider font-medium hover:underline transition truncate"
+            >
+              {product.business.name}
+            </Link>
+            {reviewCount > 0 && (
+              <span className="flex items-center gap-0.5 text-[10px] text-night/50 shrink-0">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1">
+                  <path d="M12 2l2.9 6.3 6.9.6-5.2 4.6 1.6 6.8L12 16.9l-6.2 3.4 1.6-6.8L2.2 8.9l6.9-.6L12 2z" />
+                </svg>
+                {avgRating.toFixed(1)} ({reviewCount})
+              </span>
+            )}
+          </div>
         )}
 
         {/* Product name */}
@@ -183,7 +198,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Contact Seller - button ya bluu */}
+        {/* Contact Seller */}
         {product.business?.phone && (
           <button
             onClick={() => setShowContact(true)}
@@ -201,6 +216,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       {showContact && product.business?.phone && (
         <ContactSellerModal
           business={{
+            id: product.business.id,
             name: product.business.name,
             phone: product.business.phone,
             logoUrl: product.business.logoUrl,

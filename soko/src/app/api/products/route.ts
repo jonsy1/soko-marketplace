@@ -65,6 +65,7 @@ export async function GET(req: Request) {
           logoUrl: true,
           description: true,
           isOpen: true,
+          reviews: { select: { rating: true } },
         },
       },
       category: { select: { name: true, slug: true } },

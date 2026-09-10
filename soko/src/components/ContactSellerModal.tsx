@@ -1,9 +1,13 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import StarRating from './StarRating';
 
 interface ContactSellerModalProps {
   business: {
+    id: string;
     name: string;
     phone: string;
     logoUrl?: string | null;
@@ -25,11 +29,58 @@ function toWhatsAppNumber(phone: string) {
 }
 
 export default function ContactSellerModal({ business, distance, onClose }: ContactSellerModalProps) {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
+
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [average, setAverage] = useState(0);
+  const [count, setCount] = useState(0);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  const [myRating, setMyRating] = useState(0);
+  const [myComment, setMyComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
   const waNumber = toWhatsAppNumber(business.phone);
   const directionsUrl =
     business.latitude && business.longitude
       ? `https://www.google.com/maps/dir/?api=1&destination=${business.latitude},${business.longitude}`
       : null;
+
+  const loadReviews = () => {
+    setLoadingReviews(true);
+    fetch(`/api/reviews?businessId=${business.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(data.reviews || []);
+        setAverage(data.average || 0);
+        setCount(data.count || 0);
+      })
+      .finally(() => setLoadingReviews(false));
+  };
+
+  useEffect(() => {
+    loadReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business.id]);
+
+  const handleSubmitReview = async () => {
+    if (myRating < 1) return;
+    setSubmitting(true);
+    try {
+      await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId: business.id, rating: myRating, comment: myComment }),
+      });
+      setSubmitted(true);
+      setMyComment('');
+      loadReviews();
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[60] bg-night/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -59,7 +110,15 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
         </div>
 
         <div className="p-5">
-          <h2 className="font-display text-xl font-bold text-night">{business.name}</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-bold text-night">{business.name}</h2>
+            {!loadingReviews && count > 0 && (
+              <span className="flex items-center gap-1 bg-teal-50 text-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
+                <StarRating value={average} size={12} />
+                {average.toFixed(1)}
+              </span>
+            )}
+          </div>
           {business.description && (
             <p className="text-sm text-night/50 mt-0.5">{business.description}</p>
           )}
@@ -147,6 +206,53 @@ export default function ContactSellerModal({ business, distance, onClose }: Cont
               <p className="text-xs text-night/50">{business.location}</p>
             </div>
           </div>
+
+          {/* Rate this shop */}
+          <div className="mt-6 border-t border-night/10 pt-5">
+            <p className="font-semibold text-night text-sm mb-2">Rate this shop</p>
+            {isLoggedIn ? (
+              submitted ? (
+                <p className="text-sm text-teal-600">Asante kwa review yako!</p>
+              ) : (
+                <div>
+                  <StarRating value={myRating} interactive size={26} onChange={setMyRating} />
+                  <textarea
+                    value={myComment}
+                    onChange={(e) => setMyComment(e.target.value)}
+                    placeholder="Andika maoni yako (si lazima)"
+                    rows={2}
+                    className="input rounded-xl mt-2 text-sm"
+                  />
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={myRating < 1 || submitting}
+                    className="mt-2 bg-market-500 hover:bg-market-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl px-4 py-2 transition"
+                  >
+                    {submitting ? 'Inatuma…' : 'Tuma review'}
+                  </button>
+                </div>
+              )
+            ) : (
+              <Link href="/login" className="text-sm text-market-500 hover:underline">
+                Ingia ili utoe review
+              </Link>
+            )}
+          </div>
+
+          {/* Existing reviews */}
+          {count > 0 && (
+            <div className="mt-5 space-y-3">
+              {reviews.slice(0, 5).map((r) => (
+                <div key={r.id} className="border-t border-night/5 pt-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-night">{r.customer?.name || 'Soko Customer'}</p>
+                    <StarRating value={r.rating} size={12} />
+                  </div>
+                  {r.comment && <p className="text-xs text-night/60 mt-0.5">{r.comment}</p>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

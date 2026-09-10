@@ -51,7 +51,22 @@ export async function GET(req: Request) {
     where,
     orderBy: { createdAt: 'desc' },
     include: {
-      business: { select: { id: true, name: true, slug: true, location: true, status: true, offersDelivery: true, latitude: true, longitude: true } },
+      business: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          location: true,
+          status: true,
+          offersDelivery: true,
+          latitude: true,
+          longitude: true,
+          phone: true,
+          logoUrl: true,
+          description: true,
+          isOpen: true,
+        },
+      },
       category: { select: { name: true, slug: true } },
     },
     take: 60,

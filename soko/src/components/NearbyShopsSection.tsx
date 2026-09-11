@@ -6,20 +6,12 @@ import ContactSellerModal from './ContactSellerModal';
 
 const NearbyShopsMap = dynamic(() => import('./NearbyShopsMap'), { ssr: false });
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  children: any[];
-}
-
 interface NearbyShopsSectionProps {
-  categories: Category[];
+  categories?: any[];
 }
 
-export default function NearbyShopsSection({ categories }: NearbyShopsSectionProps) {
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [shops, setShops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -39,14 +31,11 @@ export default function NearbyShopsSection({ categories }: NearbyShopsSectionPro
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams();
-    params.set('nearby', '1');
-    if (activeCategory) params.set('category', activeCategory);
-    fetch(`/api/businesses?${params.toString()}`)
+    fetch(`/api/businesses?nearby=1`)
       .then((r) => r.json())
       .then((data) => setShops(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false));
-  }, [activeCategory]);
+  }, []);
 
   const distanceOf = (shop: any) => {
     if (!userLocation || !shop.latitude || !shop.longitude) return null;
@@ -79,6 +68,17 @@ export default function NearbyShopsSection({ categories }: NearbyShopsSectionPro
         <h2 className="text-xl font-semibold text-night">Shops near you</h2>
         <div className="flex bg-market-50 rounded-full p-1 gap-1">
           <button
+            onClick={() => setViewMode('list')}
+            className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full transition ${
+              viewMode === 'list' ? 'bg-market-500 text-white' : 'text-night/60'
+            }`}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+            List
+          </button>
+          <button
             onClick={() => setViewMode('map')}
             className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full transition ${
               viewMode === 'map' ? 'bg-market-500 text-white' : 'text-night/60'
@@ -90,41 +90,7 @@ export default function NearbyShopsSection({ categories }: NearbyShopsSectionPro
             </svg>
             Map
           </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full transition ${
-              viewMode === 'list' ? 'bg-market-500 text-white' : 'text-night/60'
-            }`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-            </svg>
-            List
-          </button>
         </div>
-      </div>
-
-      {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-        <button
-          onClick={() => setActiveCategory(null)}
-          className={`rounded-full text-xs px-4 py-1.5 whitespace-nowrap transition ${
-            !activeCategory ? 'bg-night text-market-50' : 'bg-white border border-night/15 text-night/60'
-          }`}
-        >
-          All
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setActiveCategory(c.slug)}
-            className={`rounded-full text-xs px-4 py-1.5 whitespace-nowrap transition ${
-              activeCategory === c.slug ? 'bg-night text-market-50' : 'bg-white border border-night/15 text-night/60'
-            }`}
-          >
-            {c.name}
-          </button>
-        ))}
       </div>
 
       {loading || !userLocation ? (
@@ -145,7 +111,7 @@ export default function NearbyShopsSection({ categories }: NearbyShopsSectionPro
       ) : (
         <div className="space-y-3">
           {shops.length === 0 ? (
-            <p className="text-sm text-night/50 text-center py-8">No shops found in this category yet.</p>
+            <p className="text-sm text-night/50 text-center py-8">No shops found yet.</p>
           ) : (
             shops.map((shop) => (
               <button

@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from '@/components/LanguageProvider';
 import { ProductGridSkeleton } from '@/components/Skeleton';
 import HeroSlider from '@/components/HeroSlider';
+import NearbyShopsSection from '@/components/NearbyShopsSection';
 
 // Dynamic imports
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
@@ -324,6 +325,9 @@ function HomeContent() {
           </div>
         </section>
       )}
+
+      {/* SHOPS NEAR YOU - ramani/list */}
+      <NearbyShopsSection categories={categories} />
 
       {/* PRODUCTS SECTION */}
       <section id="products-section" className="max-w-6xl mx-auto px-4 py-8">

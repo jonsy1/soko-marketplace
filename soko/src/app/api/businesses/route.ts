@@ -15,6 +15,51 @@ function slugify(s: string) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
+  const nearby = searchParams.get('nearby');
+  const category = searchParams.get('category');
+
+  // Public "shops near you" mode - safe public fields only
+  if (nearby) {
+    const where: any = {
+      status: 'VERIFIED',
+      isOpen: true,
+      latitude: { not: null },
+      longitude: { not: null },
+    };
+
+    if (category) {
+      const cat = await prisma.category.findUnique({
+        where: { slug: category },
+        include: { children: { select: { id: true } } },
+      });
+      if (cat) {
+        const ids = [cat.id, ...cat.children.map((c) => c.id)];
+        where.products = { some: { categoryId: { in: ids }, active: true } };
+      }
+    }
+
+    const publicBusinesses = await prisma.business.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        logoUrl: true,
+        location: true,
+        latitude: true,
+        longitude: true,
+        phone: true,
+        isOpen: true,
+        reviews: { select: { rating: true } },
+      },
+      take: 100,
+    });
+
+    return NextResponse.json(publicBusinesses);
+  }
+
+  // Existing admin behavior - unchanged
   const businesses = await prisma.business.findMany({
     where: status ? { status: status as any } : undefined,
     orderBy: { createdAt: 'desc' },

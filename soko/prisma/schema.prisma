@@ -93,6 +93,7 @@ model Product {
   description String?
   price       Float
   costPrice   Float?
+  discountPercent Int?
   quantity    Int      @default(0)
   imageUrl    String?
   active      Boolean  @default(true)

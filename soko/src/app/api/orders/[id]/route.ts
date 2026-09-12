@@ -3,6 +3,32 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { sendPushToUser } from '@/lib/push';
 
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const session = await auth();
+  const userId = (session?.user as any)?.id;
+  const role = (session?.user as any)?.role;
+  if (!userId) return NextResponse.json({ error: 'You must be logged in.' }, { status: 401 });
+
+  const order = await prisma.order.findUnique({
+    where: { id: params.id },
+    include: {
+      business: { select: { id: true, name: true, slug: true, phone: true, location: true, ownerId: true } },
+      customer: { select: { id: true, name: true, phone: true } },
+      items: { include: { product: { select: { id: true, name: true, imageUrl: true } } } },
+    },
+  });
+
+  if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
+
+  const isSeller = order.business.ownerId === userId;
+  const isCustomer = order.customerId === userId;
+  if (!isSeller && !isCustomer && role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Not authorized.' }, { status: 403 });
+  }
+
+  return NextResponse.json(order);
+}
+
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const session = await auth();
   const userId = (session?.user as any)?.id;

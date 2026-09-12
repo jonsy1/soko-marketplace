@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from './CartContext';
 import ContactSellerModal from './ContactSellerModal';
+import { getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 
 interface ProductCardProps {
   product: {
     id: string;
     name: string;
     price: number;
+    discountPercent?: number | null;
     imageUrl: string | null;
     quantity?: number;
     category?: { name: string; slug: string } | null;
@@ -41,6 +43,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const reviews = product.business?.reviews || [];
   const reviewCount = reviews.length;
   const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0;
+
+  const discounted = hasRealDiscount(product.discountPercent);
+  const effectivePrice = getEffectivePrice(product.price, product.discountPercent);
 
   // Get user location
   useEffect(() => {
@@ -91,7 +96,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     addItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: effectivePrice,
       imageUrl: product.imageUrl || null,
       maxQuantity: maxQuantity,
       businessId: businessId,
@@ -118,6 +123,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="w-full h-full flex items-center justify-center text-4xl bg-market-100 text-market-300">
             📦
           </div>
+        )}
+
+        {/* Discount badge */}
+        {discounted && (
+          <span className="absolute top-2 left-2 bg-clay-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            -{product.discountPercent}%
+          </span>
         )}
 
         {/* Wishlist button */}
@@ -170,14 +182,21 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Price */}
         <div className="flex items-center justify-between mt-1.5">
-          <p className="font-bold text-clay-500 text-base">
-            TZS {Number(product.price).toLocaleString()}
-          </p>
+          <div>
+            <p className="font-bold text-clay-500 text-base leading-tight">
+              TZS {Number(effectivePrice).toLocaleString()}
+            </p>
+            {discounted && (
+              <p className="text-night/40 text-xs line-through leading-tight">
+                TZS {Number(product.price).toLocaleString()}
+              </p>
+            )}
+          </div>
 
           {/* Add to Cart button */}
           <button
             onClick={handleAddToCart}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${
               isAdded
                 ? 'bg-green-500 text-white'
                 : 'bg-night text-white hover:bg-market-500'

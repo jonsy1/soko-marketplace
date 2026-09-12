@@ -13,64 +13,101 @@ export default function PrivacyPage() {
 
       <div className="prose prose-night max-w-none">
         <p className="text-night/80">
-          At <strong>Soko Marketplace</strong>, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our platform.
+          At <strong>Soko Marketplace</strong> ("Soko", "we", "us"), we are committed to protecting your privacy.
+          This Privacy Policy explains what information we collect, how we use it, and your rights, in line with
+          Tanzania's Personal Data Protection Act, 2022 (PDPA).
         </p>
 
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">1. Information We Collect</h2>
-        <p className="text-night/80">
-          We collect information you provide directly, such as when you create an account, make a purchase, or contact us. This includes:
-        </p>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Name and contact information (email address, phone number)</li>
-          <li>Account credentials (password, profile information)</li>
-          <li>Transaction and order history</li>
-          <li>Communications with us</li>
+          <li><strong>Account information:</strong> name, email address, phone number, and password (encrypted).</li>
+          <li><strong>Business information (Sellers):</strong> business name, description, phone number, shop location/address, and logo/photos.</li>
+          <li><strong>Location data:</strong> if you grant permission, your device's GPS coordinates, used to show nearby shops and estimated distance. You can decline this without losing access to the rest of Soko.</li>
+          <li><strong>Content you provide:</strong> product listings and photos, reviews and ratings, and messages sent through the platform.</li>
+          <li><strong>Google account information:</strong> if you sign in with Google, we receive your name, email address, and profile photo from Google.</li>
+          <li><strong>Order and transaction history:</strong> items ordered, quantities, and order status.</li>
+          <li><strong>Technical data:</strong> login session cookies (to keep you signed in) and, if enabled, push notification subscription details.</li>
         </ul>
 
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">2. How We Use Your Information</h2>
-        <p className="text-night/80">
-          We use your information to:
-        </p>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Provide, maintain, and improve our services</li>
-          <li>Process transactions and send order confirmations</li>
-          <li>Send you updates, promotions, and marketing communications (with your consent)</li>
-          <li>Protect against fraud and unauthorized transactions</li>
+          <li>To provide, operate, and improve the Soko platform</li>
+          <li>To process and display orders between Buyers and Sellers</li>
+          <li>To show nearby shops and calculate distance (only if you've shared your location)</li>
+          <li>To send order updates and notifications (including push notifications, if enabled)</li>
+          <li>To display reviews and ratings publicly, as described below</li>
+          <li>To protect against fraud, abuse, and unauthorized access</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">3. Information Sharing</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">3. What's Public on Soko</h2>
         <p className="text-night/80">
-          We do not sell your personal information. We may share your information with:
+          To function as a marketplace, some information is visible to anyone browsing Soko, including: a
+          Seller's business name, shop location, phone number/WhatsApp (shown to buyers who choose to contact the
+          seller), and any reviews or ratings left by customers. Please keep this in mind before entering business
+          contact details or writing a review.
         </p>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">4. Information Sharing</h2>
+        <p className="text-night/80">We do not sell your personal information. We share information only with:</p>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Service providers who help us operate our platform (payment processors, hosting)</li>
-          <li>Law enforcement when required by law</li>
-          <li>Other users only with your explicit consent</li>
+          <li>Infrastructure providers who help us run Soko (hosting, database, and file storage providers)</li>
+          <li>Google, only for the purpose of Google Sign-In authentication</li>
+          <li>OpenStreetMap, which receives map coordinates to display maps (no personal account information is sent)</li>
+          <li>Law enforcement, when required by Tanzanian law</li>
+          <li>Other users, only where necessary for the marketplace to function (e.g., a Seller sees the name of a customer who ordered from them)</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">4. Data Security</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">5. International Data Storage</h2>
         <p className="text-night/80">
-          We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+          Some of our hosting and database providers store data on servers located outside Tanzania. Where this
+          happens, we take reasonable steps to protect your information in accordance with the PDPA's requirements
+          for cross-border data transfer.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">5. Your Rights</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">6. Data Security</h2>
         <p className="text-night/80">
-          You have the right to:
+          We use industry-standard measures (such as password encryption) to protect your information against
+          unauthorized access, alteration, disclosure, or destruction. No online service can guarantee absolute
+          security.
         </p>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">7. Data Retention</h2>
+        <p className="text-night/80">
+          We retain your information for as long as your account is active, or as needed to provide our services,
+          comply with our legal obligations, and resolve disputes.
+        </p>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">8. Your Rights</h2>
+        <p className="text-night/80">Under the PDPA, you have the right to:</p>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Access, correct, or delete your personal information</li>
-          <li>Withdraw consent at any time</li>
+          <li>Access, correct, or request deletion of your personal information</li>
+          <li>Withdraw consent (for example, by revoking location access in your device settings, or by deleting your account)</li>
           <li>Request a copy of your data</li>
+          <li>Lodge a complaint with the Personal Data Protection Commission (PDPC) of Tanzania if you believe your data has been mishandled</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">6. Contact Us</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">9. Children's Privacy</h2>
         <p className="text-night/80">
-          If you have any questions about this Privacy Policy, please contact us:
+          Soko is intended for users aged 18 and above. We do not knowingly collect personal information from
+          anyone under 18. If you believe a minor has provided us with personal information, please contact us so
+          we can remove it.
+        </p>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">10. Changes to This Policy</h2>
+        <p className="text-night/80">
+          We may update this Privacy Policy from time to time. We will post the updated version here with a new
+          "Last updated" date.
+        </p>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">11. Contact Us</h2>
+        <p className="text-night/80">
+          If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us:
         </p>
         <div className="bg-night/5 rounded-card p-4 mt-3 space-y-1 text-night/80">
-          <p><strong>Email:</strong> <a href="mailto:hello@sokotz.com" className="text-market-500 hover:underline">hello@sokotz.com</a></p>
-          <p><strong>Phone:</strong> <a href="tel:+255700000000" className="text-market-500 hover:underline">+255 700 000 000</a></p>
-          <p><strong>Location:</strong> Tanzania</p>
+          <p><strong>Name:</strong> [WEKA JINA LAKO / LA BIASHARA HAPA]</p>
+          <p><strong>Email:</strong> <a href="mailto:WEKA-BARUA-PEPE-YAKO@example.com" className="text-market-500 hover:underline">[WEKA BARUA PEPE YAKO]</a></p>
+          <p><strong>Phone:</strong> <a href="tel:+255000000000" className="text-market-500 hover:underline">[WEKA NAMBA YAKO - HIARI]</a></p>
+          <p><strong>Location:</strong> [MJI], Tanzania</p>
           <p className="mt-2">
             <Link href="/contact" className="text-market-500 hover:underline font-semibold">
               📧 Send us a message →

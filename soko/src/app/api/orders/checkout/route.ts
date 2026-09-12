@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { sendPushToUser } from '@/lib/push';
+import { getEffectivePrice } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
     byBusiness[product.businessId].push({
       productId: product.id,
       quantity: item.quantity,
-      price: product.price,
+      price: getEffectivePrice(product.price, product.discountPercent),
       costPrice: product.costPrice,
     });
   }

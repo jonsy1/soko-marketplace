@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
 import { useCart } from '@/components/CartContext';
-import { getDisplayOriginalPrice, DISCOUNT_RATE } from '@/lib/pricing';
+import { getDisplayOriginalPrice, DISCOUNT_RATE, getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -65,7 +65,7 @@ export default function ProductPage() {
       {
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: getEffectivePrice(product.price, product.discountPercent),
         imageUrl: product.imageUrl || null,
         maxQuantity: product.quantity,
         businessId: product.business.id,
@@ -80,7 +80,8 @@ export default function ProductPage() {
   if (!product) return <div className="max-w-5xl mx-auto px-4 py-16 text-night/50">{t.product.loading}</div>;
   if (product.error) return <div className="max-w-5xl mx-auto px-4 py-16">{t.product.notFound}</div>;
 
-  const discounted = product.price;
+  const hasDiscount = hasRealDiscount(product.discountPercent);
+  const discounted = getEffectivePrice(product.price, product.discountPercent);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
@@ -116,9 +117,19 @@ export default function ProductPage() {
         )}
         <h1 className="font-display text-2xl font-bold mt-2">{product.name}</h1>
         <div className="flex items-center gap-3 mt-2 flex-wrap">
-          <span className="text-teal-600 font-bold text-2xl">{formatTZS(discounted)}</span>
-          <span className="text-night/40 text-base line-through">{formatTZS(getDisplayOriginalPrice(product.price))}</span>
-          <span className="badge bg-clay/10 text-clay">-{DISCOUNT_RATE * 100}% OFF</span>
+          {hasDiscount ? (
+            <>
+              <span className="text-clay-500 font-bold text-2xl">{formatTZS(discounted)}</span>
+              <span className="text-night/40 text-base line-through">{formatTZS(product.price)}</span>
+              <span className="badge bg-clay-50 text-clay-600">-{product.discountPercent}% OFF</span>
+            </>
+          ) : (
+            <>
+              <span className="text-clay-500 font-bold text-2xl">{formatTZS(product.price)}</span>
+              <span className="text-night/40 text-base line-through">{formatTZS(getDisplayOriginalPrice(product.price))}</span>
+              <span className="badge bg-clay-50 text-clay-600">-{DISCOUNT_RATE * 100}% OFF</span>
+            </>
+          )}
         </div>
         {product.category && (
           <span className="badge bg-market-100 text-market-600 mt-2">{product.category.name}</span>
@@ -132,7 +143,7 @@ export default function ProductPage() {
 
         <div className="card p-5 mt-6 space-y-4">
           <h2 className="font-semibold">{t.product.placeOrder}</h2>
-          {error && <div className="text-sm bg-clay/10 text-clay px-3 py-2 rounded-card">{error}</div>}
+          {error && <div className="text-sm bg-clay-50 text-clay-600 px-3 py-2 rounded-card">{error}</div>}
           {success && (
             <div className="text-sm bg-teal-50 text-teal-600 px-3 py-2 rounded-card">{success}</div>
           )}

@@ -30,6 +30,7 @@ export default function EditProductPage() {
           quantity: p.quantity,
           imageUrl: p.imageUrl || '',
           categoryId: p.categoryId || '',
+          discountPercent: p.discountPercent ?? '',
         });
         setImagePreview(p.imageUrl || '');
       });
@@ -87,11 +88,16 @@ export default function EditProductPage() {
 
   if (!form) return <div className="max-w-lg mx-auto px-4 py-10 text-night/50">Loading…</div>;
 
+  const discountedPreview =
+    form.discountPercent && Number(form.discountPercent) > 0
+      ? Math.round(Number(form.price) * (1 - Number(form.discountPercent) / 100))
+      : null;
+
   return (
     <div className="max-w-lg mx-auto px-4 py-10">
       <h1 className="font-display text-2xl font-bold mb-6">Edit product</h1>
       <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-        {error && <div className="text-sm bg-clay/10 text-clay px-3 py-2 rounded-card">{error}</div>}
+        {error && <div className="text-sm bg-clay-50 text-clay-600 px-3 py-2 rounded-card">{error}</div>}
         <div>
           <label className="label">Product name</label>
           <input
@@ -134,6 +140,31 @@ export default function EditProductPage() {
             />
           </div>
         </div>
+
+        {/* Discount - seller controlled */}
+        <div className="bg-market-50 rounded-xl p-4">
+          <label className="label">Discount % (optional)</label>
+          <input
+            type="number"
+            min={0}
+            max={90}
+            className="input"
+            value={form.discountPercent}
+            onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+            placeholder="e.g. 20 for 20% off"
+          />
+          <p className="text-xs text-night/50 mt-1.5">
+            Leave empty for no discount. Buyers will be charged the discounted price.
+          </p>
+          {discountedPreview !== null && (
+            <p className="text-sm mt-2">
+              Buyers will pay{' '}
+              <span className="font-bold text-clay-500">TZS {discountedPreview.toLocaleString()}</span>{' '}
+              <span className="line-through text-night/40">TZS {Number(form.price).toLocaleString()}</span>
+            </p>
+          )}
+        </div>
+
         <div>
           <label className="label">Quantity available</label>
           <input
@@ -196,7 +227,7 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={removeImage}
-                className="btn btn-outline !text-clay !border-clay/30 text-xs mt-2 block"
+                className="btn btn-outline !text-clay-600 !border-clay-500/30 text-xs mt-2 block"
               >
                 Remove photo
               </button>

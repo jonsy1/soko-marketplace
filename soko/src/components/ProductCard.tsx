@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useCart } from './CartContext';
 import ContactSellerModal from './ContactSellerModal';
 import { getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
+import { useUserLocation } from './UserLocationContext';
 
 interface ProductCardProps {
   product: {
@@ -37,8 +38,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlist, setIsWishlist] = useState(false);
   const [distance, setDistance] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const [showContact, setShowContact] = useState(false);
+  const userLocation = useUserLocation();
 
   const reviews = product.business?.reviews || [];
   const reviewCount = reviews.length;
@@ -47,22 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const discounted = hasRealDiscount(product.discountPercent);
   const effectivePrice = getEffectivePrice(product.price, product.discountPercent);
 
-  // Get user location
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      () => {},
-      { enableHighAccuracy: true }
-    );
-  }, []);
-
-  // Calculate distance
+  // Calculate distance using the shared location (fetched once for the whole app)
   useEffect(() => {
     if (!userLocation || !product.business?.latitude || !product.business?.longitude) return;
 
@@ -116,6 +102,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={product.imageUrl}
             alt={product.name}
             fill
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />

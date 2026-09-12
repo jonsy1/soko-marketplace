@@ -8,6 +8,38 @@ function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
 }
 
+export async function GET() {
+  const session = await auth();
+  const userId = (session?.user as any)?.id;
+  const role = (session?.user as any)?.role;
+  if (!userId) return NextResponse.json({ error: 'You must be logged in.' }, { status: 401 });
+
+  let where: any = {};
+
+  if (role === 'ADMIN') {
+    where = {};
+  } else if (role === 'BUSINESS') {
+    const business = await prisma.business.findUnique({ where: { ownerId: userId } });
+    if (!business) return NextResponse.json([]);
+    where = { businessId: business.id };
+  } else {
+    where = { customerId: userId };
+  }
+
+  const orders = await prisma.order.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      customer: { select: { name: true } },
+      business: { select: { name: true, slug: true } },
+      items: { include: { product: { select: { name: true, imageUrl: true } } } },
+    },
+    take: 100,
+  });
+
+  return NextResponse.json(orders);
+}
+
 export async function POST(req: Request) {
   const session = await auth();
   const userId = (session?.user as any)?.id;

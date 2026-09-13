@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'Soko',
   },
   icons: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0E2A2F',
+  themeColor: '#2F6FED',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

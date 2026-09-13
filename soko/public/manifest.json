@@ -4,8 +4,8 @@
   "description": "One search. Every shop. Find any product from any business across Tanzania.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0E2A2F",
-  "theme_color": "#0E2A2F",
+  "background_color": "#FFFFFF",
+  "theme_color": "#2F6FED",
   "icons": [
     {
       "src": "/icon-192.png",

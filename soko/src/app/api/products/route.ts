@@ -65,7 +65,6 @@ export async function GET(req: Request) {
           logoUrl: true,
           description: true,
           isOpen: true,
-          reviews: { select: { rating: true } },
         },
       },
       category: { select: { name: true, slug: true } },
@@ -73,7 +72,35 @@ export async function GET(req: Request) {
     take: 60,
   });
 
-  return NextResponse.json(products);
+  // Compute review average/count per business in ONE query, instead of
+  // sending every individual review rating for every product (was causing
+  // huge duplicated egress: N products from the same business each carried
+  // that business's full review list).
+  const businessIds = [...new Set(products.map((p) => p.businessId))];
+  const reviewStats = businessIds.length
+    ? await prisma.review.groupBy({
+        by: ['businessId'],
+        where: { businessId: { in: businessIds } },
+        _avg: { rating: true },
+        _count: { rating: true },
+      })
+    : [];
+  const statsMap = new Map(
+    reviewStats.map((r) => [r.businessId, { avgRating: r._avg.rating || 0, reviewCount: r._count.rating }])
+  );
+
+  const productsWithStats = products.map((p) => ({
+    ...p,
+    business: p.business
+      ? {
+          ...p.business,
+          avgRating: statsMap.get(p.businessId)?.avgRating || 0,
+          reviewCount: statsMap.get(p.businessId)?.reviewCount || 0,
+        }
+      : p.business,
+  }));
+
+  return NextResponse.json(productsWithStats);
 }
 
 export async function POST(req: Request) {

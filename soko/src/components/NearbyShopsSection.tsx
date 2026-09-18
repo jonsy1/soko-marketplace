@@ -52,9 +52,7 @@ export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
   };
 
   const avgRating = (shop: any) => {
-    const reviews = shop.reviews || [];
-    if (!reviews.length) return null;
-    return reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length;
+    return shop.reviewCount > 0 ? shop.avgRating : null;
   };
 
   const openShop = (id: string) => {

@@ -51,12 +51,32 @@ export async function GET(req: Request) {
         longitude: true,
         phone: true,
         isOpen: true,
-        reviews: { select: { rating: true } },
       },
       take: 100,
     });
 
-    return NextResponse.json(publicBusinesses);
+    // Same fix as /api/products - one grouped query for review stats,
+    // instead of each business carrying its full review-rating list.
+    const businessIds = publicBusinesses.map((b) => b.id);
+    const reviewStats = businessIds.length
+      ? await prisma.review.groupBy({
+          by: ['businessId'],
+          where: { businessId: { in: businessIds } },
+          _avg: { rating: true },
+          _count: { rating: true },
+        })
+      : [];
+    const statsMap = new Map(
+      reviewStats.map((r) => [r.businessId, { avgRating: r._avg.rating || 0, reviewCount: r._count.rating }])
+    );
+
+    const withStats = publicBusinesses.map((b) => ({
+      ...b,
+      avgRating: statsMap.get(b.id)?.avgRating || 0,
+      reviewCount: statsMap.get(b.id)?.reviewCount || 0,
+    }));
+
+    return NextResponse.json(withStats);
   }
 
   // Existing admin behavior - unchanged

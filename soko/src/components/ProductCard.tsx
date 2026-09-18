@@ -28,7 +28,8 @@ interface ProductCardProps {
       logoUrl?: string | null;
       description?: string | null;
       isOpen?: boolean;
-      reviews?: { rating: number }[];
+      avgRating?: number;
+      reviewCount?: number;
     } | null;
   };
 }
@@ -41,9 +42,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [showContact, setShowContact] = useState(false);
   const userLocation = useUserLocation();
 
-  const reviews = product.business?.reviews || [];
-  const reviewCount = reviews.length;
-  const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0;
+  const avgRating = product.business?.avgRating || 0;
+  const reviewCount = product.business?.reviewCount || 0;
 
   const discounted = hasRealDiscount(product.discountPercent);
   const effectivePrice = getEffectivePrice(product.price, product.discountPercent);

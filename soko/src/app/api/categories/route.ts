@@ -34,7 +34,16 @@ export async function GET() {
       },
     },
   });
-  return NextResponse.json(categories);
+
+  // Categories rarely change - let Vercel's CDN cache this response so most
+  // homepage visits don't hit the database/function at all. Cuts a
+  // meaningful chunk of Fast Origin Transfer since this runs on every
+  // homepage load.
+  return NextResponse.json(categories, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+    },
+  });
 }
 
 export async function POST(req: Request) {

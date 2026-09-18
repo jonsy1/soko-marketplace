@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ContactSellerModal from './ContactSellerModal';
 
@@ -16,8 +17,29 @@ export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedShop, setSelectedShop] = useState<any | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Only fetch data (location + shops) once this section actually scrolls
+  // into view - many visitors never scroll this far, so this avoids an
+  // unconditional database hit on every single homepage load.
+  useEffect(() => {
+    if (!sectionRef.current || hasLoaded) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setHasLoaded(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [hasLoaded]);
 
   useEffect(() => {
+    if (!hasLoaded) return;
     if (!navigator.geolocation) {
       setUserLocation({ lat: -6.7924, lng: 39.2083 });
       return;
@@ -27,15 +49,16 @@ export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
       () => setUserLocation({ lat: -6.7924, lng: 39.2083 }),
       { enableHighAccuracy: true }
     );
-  }, []);
+  }, [hasLoaded]);
 
   useEffect(() => {
+    if (!hasLoaded) return;
     setLoading(true);
     fetch(`/api/businesses?nearby=1`)
       .then((r) => r.json())
       .then((data) => setShops(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false));
-  }, []);
+  }, [hasLoaded]);
 
   const distanceOf = (shop: any) => {
     if (!userLocation || !shop.latitude || !shop.longitude) return null;
@@ -61,7 +84,7 @@ export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-8">
+    <section ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-night">Shops near you</h2>
         <div className="flex bg-market-50 rounded-full p-1 gap-1">
@@ -91,7 +114,7 @@ export default function NearbyShopsSection({}: NearbyShopsSectionProps) {
         </div>
       </div>
 
-      {loading || !userLocation ? (
+      {!hasLoaded || loading || !userLocation ? (
         <div className="h-64 rounded-2xl bg-market-50 animate-pulse" />
       ) : viewMode === 'map' ? (
         <div className="relative">

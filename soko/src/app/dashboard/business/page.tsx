@@ -23,16 +23,19 @@ export default function BusinessDashboard() {
   const [period, setPeriod] = useState('month');
   const [closing, setClosing] = useState<any>(null);
   const [closingLoading, setClosingLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<any>(null);
 
   useEffect(() => {
     if (!session?.user) return;
     Promise.all([
       fetch('/api/orders').then((r) => r.json()),
       fetch('/api/products?mine=1').then((r) => r.json()),
+      fetch('/api/business/analytics').then((r) => r.json()),
     ])
-      .then(([o, p]) => {
+      .then(([o, p, a]) => {
         setOrders(Array.isArray(o) ? o : []);
         setProducts(Array.isArray(p) ? p : []);
+        setAnalytics(a?.error ? null : a);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -60,7 +63,7 @@ export default function BusinessDashboard() {
   };
 
   const periodOrders = orders.filter((o) => o.status !== 'CANCELLED' && isWithinPeriod(o.createdAt));
-  const lowStockProducts = products.filter((p) => (p.quantity ?? 0) <= 5 && p.active !== false);
+  const lowStockList = analytics?.lowStock || [];
 
   const greeting = () => {
     const h = now.getHours();
@@ -82,6 +85,7 @@ export default function BusinessDashboard() {
     return { date: d, revenue: dayTotal };
   });
   const maxTrendRevenue = Math.max(...trendRevenue.map((d) => d.revenue), 1);
+  const hasAnySales = trendRevenue.some((d) => d.revenue > 0);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pb-28 md:pb-10">
@@ -144,7 +148,9 @@ export default function BusinessDashboard() {
               <circle cx="17" cy="15" r="1.5" fill="currentColor" />
             </svg>
           </div>
-          <p className="text-xs text-night/50 font-medium">Net earnings</p>
+          <p className="text-xs text-night/50 font-medium">
+            {closing?.hasIncompleteCostData ? 'Est. earnings' : 'Net earnings'}
+          </p>
           <p className={`font-display text-lg font-bold mt-0.5 ${(closing?.profit || 0) >= 0 ? 'text-teal-600' : 'text-clay-600'}`}>
             {closingLoading ? '…' : formatTZS(closing?.profit || 0)}
           </p>
@@ -154,14 +160,14 @@ export default function BusinessDashboard() {
         </div>
 
         <Link href="/dashboard/business/stock" className="card p-4 block hover:shadow-md transition">
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 ${lowStockProducts.length > 0 ? 'bg-clay-500 text-white' : 'bg-market-100 text-market-600'}`}>
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-3 ${lowStockList.length > 0 ? 'bg-clay-500 text-white' : 'bg-market-100 text-market-600'}`}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 8l-9-5-9 5 9 5 9-5z" />
               <path d="M3 8v8l9 5 9-5V8" />
             </svg>
           </div>
           <p className="text-xs text-night/50 font-medium">Low stock</p>
-          <p className="font-display text-lg font-bold text-night mt-0.5">{lowStockProducts.length}</p>
+          <p className="font-display text-lg font-bold text-night mt-0.5">{lowStockList.length}</p>
         </Link>
       </div>
 
@@ -171,49 +177,94 @@ export default function BusinessDashboard() {
         </p>
       )}
 
+      {/* Store health */}
+      {analytics?.storeHealth && analytics.storeHealth.percent < 100 && (
+        <Link
+          href="/dashboard/business/settings"
+          className="flex items-center gap-3 bg-market-50 border border-night/10 rounded-2xl p-4 mb-8 hover:bg-market-50/70 transition"
+        >
+          <div className="w-10 h-10 rounded-full bg-market-500 text-white flex items-center justify-center shrink-0 font-bold text-xs">
+            {analytics.storeHealth.percent}%
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-night text-sm">Store health: {analytics.storeHealth.percent}%</p>
+            <p className="text-night/50 text-xs">
+              {analytics.storeHealth.checks.filter((c: any) => !c.done).length} item
+              {analytics.storeHealth.checks.filter((c: any) => !c.done).length === 1 ? '' : 's'} left to complete your store.
+            </p>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </Link>
+      )}
+
       {/* Sales performance */}
       <div className="card p-5 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-night">Sales performance</h2>
           <span className="text-xs text-night/40">Last 14 days</span>
         </div>
-        <div className="flex items-end gap-1.5 h-32">
-          {trendRevenue.map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-              <div
-                className="w-full bg-market-500 rounded-t hover:bg-market-600 transition"
-                style={{ height: `${Math.max((d.revenue / maxTrendRevenue) * 100, d.revenue > 0 ? 4 : 0)}%` }}
-                title={`${d.date.toDateString()}: ${formatTZS(d.revenue)}`}
-              />
+        {hasAnySales ? (
+          <>
+            <div className="flex items-end gap-1.5 h-32">
+              {trendRevenue.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                  <div
+                    className="w-full bg-market-500 rounded-t hover:bg-market-600 transition"
+                    style={{ height: `${Math.max((d.revenue / maxTrendRevenue) * 100, d.revenue > 0 ? 4 : 0)}%` }}
+                    title={`${d.date.toDateString()}: ${formatTZS(d.revenue)}`}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between text-[10px] text-night/40 mt-2">
-          <span>{trendRevenue[0]?.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-          <span>{trendRevenue[trendRevenue.length - 1]?.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-        </div>
+            <div className="flex justify-between text-[10px] text-night/40 mt-2">
+              <span>{trendRevenue[0]?.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+              <span>{trendRevenue[trendRevenue.length - 1]?.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+            </div>
+          </>
+        ) : (
+          <div className="h-32 flex items-center justify-center text-center px-4">
+            <p className="text-night/40 text-sm">
+              No sales data yet. Complete your first order to start seeing your sales trend.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Low stock alert */}
-      {lowStockProducts.length > 0 && (
-        <Link
-          href="/dashboard/business/stock"
-          className="flex items-center gap-3 bg-clay-50 border border-clay-500/20 rounded-2xl p-4 mb-8 hover:bg-clay-50/70 transition"
-        >
-          <div className="w-10 h-10 rounded-full bg-clay-500 text-white flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 9v4M12 17h.01" />
-              <path d="M10.3 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0z" />
-            </svg>
+      {/* Low stock alert — with days-remaining intelligence */}
+      {lowStockList.length > 0 && (
+        <div className="bg-clay-50 border border-clay-500/20 rounded-2xl p-4 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-clay-500 text-white flex items-center justify-center shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 9v4M12 17h.01" />
+                <path d="M10.3 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-clay-700 text-sm">Low stock alert</p>
+              <p className="text-clay-600 text-xs">
+                {lowStockList.length} product{lowStockList.length === 1 ? '' : 's'} running low on stock.
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-semibold text-clay-700 text-sm">Low stock alert</p>
-            <p className="text-clay-600 text-xs">{lowStockProducts.length} products are running low on stock.</p>
+          <div className="space-y-2">
+            {lowStockList.slice(0, 3).map((p: any) => (
+              <div key={p.id} className="flex items-center justify-between text-xs bg-white/60 rounded-lg px-3 py-2">
+                <span className="font-medium">{p.name} · {p.quantity} left</span>
+                <span className="text-clay-600">
+                  {p.estimatedDaysRemaining !== null
+                    ? `~${p.estimatedDaysRemaining} day${p.estimatedDaysRemaining === 1 ? '' : 's'} left`
+                    : 'not enough history'}
+                </span>
+              </div>
+            ))}
           </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-clay-500 shrink-0">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </Link>
+          <Link href="/dashboard/business/stock" className="btn btn-outline text-xs mt-3 inline-block">
+            View stock
+          </Link>
+        </div>
       )}
 
       {/* Recent orders */}

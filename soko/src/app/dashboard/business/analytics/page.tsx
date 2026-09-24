@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -60,6 +59,35 @@ export default function BusinessAnalyticsPage() {
         </Link>
       </div>
 
+      {/* Store health */}
+      <div className="card p-5 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold">Store health</h2>
+          <span className={`font-display text-lg font-bold ${data.storeHealth.percent >= 80 ? 'text-teal-600' : 'text-clay'}`}>
+            {data.storeHealth.percent}%
+          </span>
+        </div>
+        <div className="w-full bg-night/5 rounded-full h-2 mb-4">
+          <div
+            className={`h-2 rounded-full ${data.storeHealth.percent >= 80 ? 'bg-teal-500' : 'bg-clay'}`}
+            style={{ width: `${data.storeHealth.percent}%` }}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {data.storeHealth.checks.map((c: any) => (
+            <div key={c.key} className="flex items-center gap-2 text-sm">
+              <span className={c.done ? 'text-teal-600' : 'text-night/30'}>{c.done ? '✓' : '○'}</span>
+              <span className={c.done ? 'text-night' : 'text-night/50'}>{c.label}</span>
+            </div>
+          ))}
+        </div>
+        {data.storeHealth.percent < 100 && (
+          <Link href="/dashboard/business/settings" className="btn btn-outline text-xs mt-4 inline-block">
+            Complete store
+          </Link>
+        )}
+      </div>
+
       {/* Sales closing */}
       <div className="card p-5 mb-8">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -92,7 +120,9 @@ export default function BusinessAnalyticsPage() {
                 <p className="font-display text-lg font-bold mt-1">{formatTZS(closing.cost)}</p>
               </div>
               <div>
-                <p className="text-xs text-night/50 uppercase font-semibold">Profit</p>
+                <p className="text-xs text-night/50 uppercase font-semibold">
+                  {closing.hasIncompleteCostData ? 'Estimated profit' : 'Profit'}
+                </p>
                 <p className={`font-display text-lg font-bold mt-1 ${closing.profit >= 0 ? 'text-teal-600' : 'text-clay'}`}>
                   {formatTZS(closing.profit)}
                 </p>
@@ -149,7 +179,7 @@ export default function BusinessAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="card p-5">
           <h2 className="font-semibold mb-4">Orders by status</h2>
           <div className="space-y-2">
@@ -174,13 +204,50 @@ export default function BusinessAnalyticsPage() {
                     <p className="font-semibold">{p.name}</p>
                     <p className="text-night/50 text-xs">{p.quantity} sold</p>
                   </div>
-                  <span className="font-semibold text-teal-600">{formatTZS(p.revenue)}</span>
+                  <div className="text-right">
+                    <p className="font-semibold text-teal-600">{formatTZS(p.revenue)}</p>
+                    <p className="text-night/40 text-[11px]">
+                      {p.hasFullCostData ? 'profit' : 'est. profit'} {formatTZS(p.profit)}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Low stock intelligence */}
+      {data.lowStock.length > 0 && (
+        <div className="card p-5">
+          <h2 className="font-semibold mb-4">Low stock</h2>
+          <div className="space-y-3">
+            {data.lowStock.map((p: any) => (
+              <div key={p.id} className="flex items-center justify-between text-sm border-b border-night/5 last:border-0 pb-3 last:pb-0">
+                <div>
+                  <p className="font-semibold">{p.name}</p>
+                  <p className="text-night/50 text-xs">{p.quantity} units left</p>
+                </div>
+                <div className="text-right text-xs">
+                  {p.estimatedDaysRemaining !== null ? (
+                    <>
+                      <p className="text-night/50">{p.avgDailySales} sold/day</p>
+                      <p className={`font-semibold ${p.estimatedDaysRemaining <= 3 ? 'text-clay' : 'text-night'}`}>
+                        ~{p.estimatedDaysRemaining} day{p.estimatedDaysRemaining === 1 ? '' : 's'} remaining
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-night/40">Not enough sales history to estimate.</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link href="/dashboard/business/stock" className="btn btn-outline text-xs mt-4 inline-block">
+            View stock
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

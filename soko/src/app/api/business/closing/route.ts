@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { calculateOrdersProfit } from '@/lib/pricing';
 
 function getPeriodStart(period: string): Date {
   const now = new Date();
@@ -47,24 +48,21 @@ export async function GET(req: Request) {
     include: { items: true },
   });
 
+  const allItems = orders.flatMap((o) => o.items);
+
   let revenue = 0;
   let cost = 0;
   let unitsSold = 0;
-  let ordersWithoutCost = 0;
 
-  for (const order of orders) {
-    for (const item of order.items) {
-      revenue += item.price * item.quantity;
-      unitsSold += item.quantity;
-      if (item.costPrice != null) {
-        cost += item.costPrice * item.quantity;
-      } else {
-        ordersWithoutCost += 1;
-      }
+  for (const item of allItems) {
+    revenue += item.price * item.quantity;
+    unitsSold += item.quantity;
+    if (item.costPrice != null) {
+      cost += item.costPrice * item.quantity;
     }
   }
 
-  const profit = revenue - cost;
+  const profitInfo = calculateOrdersProfit(allItems);
 
   return NextResponse.json({
     period,
@@ -73,7 +71,7 @@ export async function GET(req: Request) {
     unitsSold,
     revenue,
     cost,
-    profit,
-    hasIncompleteCostData: ordersWithoutCost > 0,
+    profit: profitInfo.profit,
+    hasIncompleteCostData: !profitInfo.hasFullCostData,
   });
 }

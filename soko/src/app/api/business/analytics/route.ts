@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { calculateOrdersProfit } from '@/lib/pricing';
 
 export async function GET() {
   const session = await auth();
@@ -55,21 +56,81 @@ export async function GET() {
     }
   }
 
-  // Top products by quantity sold (non-cancelled orders).
-  const productSales: Record<string, { name: string; quantity: number; revenue: number }> = {};
+  // Top products by quantity sold (non-cancelled orders), now including profit.
+  const productSales: Record
+    string,
+    { name: string; quantity: number; revenue: number; items: { price: number; costPrice: number | null; quantity: number }[] }
+  > = {};
   for (const o of nonCancelled) {
     for (const item of o.items) {
       const key = item.productId;
       if (!productSales[key]) {
-        productSales[key] = { name: item.product.name, quantity: 0, revenue: 0 };
+        productSales[key] = { name: item.product.name, quantity: 0, revenue: 0, items: [] };
       }
       productSales[key].quantity += item.quantity;
       productSales[key].revenue += item.price * item.quantity;
+      productSales[key].items.push({ price: item.price, costPrice: item.costPrice, quantity: item.quantity });
     }
   }
   const topProducts = Object.values(productSales)
     .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 5);
+    .slice(0, 5)
+    .map((p) => {
+      const profitInfo = calculateOrdersProfit(p.items);
+      return {
+        name: p.name,
+        quantity: p.quantity,
+        revenue: p.revenue,
+        profit: profitInfo.profit,
+        hasFullCostData: profitInfo.hasFullCostData,
+      };
+    });
+
+  // --- Low-stock intelligence: for each active product with quantity <= 5,
+  // estimate days-remaining from the last 30 days of sales for that product.
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const lowStockRaw = await prisma.product.findMany({
+    where: { businessId: business.id, active: true, quantity: { lte: 5 } },
+    select: { id: true, name: true, quantity: true },
+  });
+
+  // Units sold per product in the last 30 days, from non-cancelled orders.
+  const recentSalesByProduct: Record<string, number> = {};
+  for (const o of nonCancelled) {
+    if (new Date(o.createdAt) < thirtyDaysAgo) continue;
+    for (const item of o.items) {
+      recentSalesByProduct[item.productId] = (recentSalesByProduct[item.productId] || 0) + item.quantity;
+    }
+  }
+
+  const lowStock = lowStockRaw.map((p) => {
+    const unitsSold30d = recentSalesByProduct[p.id] || 0;
+    const avgDailySales = unitsSold30d / 30;
+    const hasEnoughHistory = unitsSold30d >= 3; // need a minimal signal before estimating
+    return {
+      id: p.id,
+      name: p.name,
+      quantity: p.quantity,
+      avgDailySales: hasEnoughHistory ? Math.round(avgDailySales * 10) / 10 : null,
+      estimatedDaysRemaining: hasEnoughHistory && avgDailySales > 0 ? Math.round(p.quantity / avgDailySales) : null,
+    };
+  });
+
+  // --- Store health: percentage of key profile fields that are filled in.
+  const healthChecks = [
+    { key: 'name', label: 'Business name', done: !!business.name },
+    { key: 'description', label: 'Business description', done: !!business.description },
+    { key: 'logoUrl', label: 'Profile image', done: !!business.logoUrl },
+    { key: 'location', label: 'Location', done: !!business.location },
+    { key: 'gpsPin', label: 'Shop pin (GPS location)', done: !!business.latitude && !!business.longitude },
+    { key: 'phone', label: 'Phone number', done: !!business.phone },
+    { key: 'products', label: 'At least one product listed', done: productCount > 0 },
+    { key: 'deliveryOption', label: 'Delivery option set', done: business.offersDelivery !== null },
+  ];
+  const completedCount = healthChecks.filter((c) => c.done).length;
+  const storeHealthPercent = Math.round((completedCount / healthChecks.length) * 100);
 
   return NextResponse.json({
     followerCount,
@@ -80,5 +141,10 @@ export async function GET() {
     statusCounts,
     dailyRevenue: days,
     topProducts,
+    lowStock,
+    storeHealth: {
+      percent: storeHealthPercent,
+      checks: healthChecks,
+    },
   });
 }

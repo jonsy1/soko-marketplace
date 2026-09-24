@@ -8,7 +8,7 @@ function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   const userId = (session?.user as any)?.id;
   const role = (session?.user as any)?.role;
@@ -26,15 +26,70 @@ export async function GET() {
     where = { customerId: userId };
   }
 
+  const { searchParams } = new URL(req.url);
+
+  // ?counts=1 returns { NEW: 3, CONFIRMED: 4, ... } for the current scope,
+  // ignoring status filter but respecting the same ownership rules above.
+  if (searchParams.get('counts') === '1') {
+    const grouped = await prisma.order.groupBy({
+      by: ['status'],
+      where,
+      _count: { _all: true },
+    });
+    const counts: Record<string, number> = {
+      NEW: 0, CONFIRMED: 0, PROCESSING: 0, READY: 0, DELIVERED: 0, CANCELLED: 0,
+    };
+    let all = 0;
+    for (const g of grouped) {
+      counts[g.status] = g._count._all;
+      all += g._count._all;
+    }
+    return NextResponse.json({ ALL: all, ...counts });
+  }
+
+  const status = searchParams.get('status');
+  const paymentStatus = searchParams.get('paymentStatus');
+  const deliveryOption = searchParams.get('deliveryOption');
+  const customerName = searchParams.get('customer');
+  const productName = searchParams.get('product');
+  const orderNumberQuery = searchParams.get('orderNumber');
+  const dateFrom = searchParams.get('dateFrom');
+  const dateTo = searchParams.get('dateTo');
+
+  if (status && status !== 'ALL') where.status = status;
+  if (paymentStatus) where.paymentStatus = paymentStatus;
+  if (deliveryOption) where.deliveryOption = deliveryOption;
+
+  if (customerName) {
+    where.customer = { name: { contains: customerName, mode: 'insensitive' } };
+  }
+
+  if (productName) {
+    where.items = { some: { product: { name: { contains: productName, mode: 'insensitive' } } } };
+  }
+
+  if (orderNumberQuery) {
+    // Accept "#SK-10024", "SK-10024", "10024" etc — pull out the digits.
+    const digits = orderNumberQuery.replace(/\D/g, '');
+    const parsed = parseInt(digits, 10);
+    if (!isNaN(parsed)) where.orderNumber = parsed;
+  }
+
+  if (dateFrom || dateTo) {
+    where.createdAt = {};
+    if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+    if (dateTo) where.createdAt.lte = new Date(dateTo);
+  }
+
   const orders = await prisma.order.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     include: {
-      customer: { select: { name: true } },
+      customer: { select: { name: true, phone: true } },
       business: { select: { name: true, slug: true } },
       items: { include: { product: { select: { name: true, imageUrl: true } } } },
     },
-    take: 100,
+    take: 200,
   });
 
   return NextResponse.json(orders);

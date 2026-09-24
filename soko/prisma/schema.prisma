@@ -35,6 +35,14 @@ enum DeliveryOption {
   MEET_DIRECTLY
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CASH_ON_DELIVERY
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -164,18 +172,21 @@ model ConversationMessage {
 }
 
 model Order {
-  id             String         @id @default(cuid())
-  status         OrderStatus    @default(NEW)
-  deliveryOption DeliveryOption @default(CUSTOMER_PICKUP)
-  note           String?
-  totalPrice     Float
-  createdAt      DateTime       @default(now())
-  customer       User           @relation(fields: [customerId], references: [id])
-  customerId     String
-  business       Business       @relation(fields: [businessId], references: [id])
-  businessId     String
-  items          OrderItem[]
-  messages       Message[]
+  id                 String         @id @default(cuid())
+  orderNumber        Int            @unique @default(autoincrement())
+  status             OrderStatus    @default(NEW)
+  paymentStatus      PaymentStatus  @default(CASH_ON_DELIVERY)
+  deliveryOption     DeliveryOption @default(CUSTOMER_PICKUP)
+  note               String?
+  cancellationReason String?
+  totalPrice         Float
+  createdAt          DateTime       @default(now())
+  customer           User           @relation(fields: [customerId], references: [id])
+  customerId         String
+  business           Business       @relation(fields: [businessId], references: [id])
+  businessId         String
+  items              OrderItem[]
+  messages           Message[]
 }
 
 model OrderItem {

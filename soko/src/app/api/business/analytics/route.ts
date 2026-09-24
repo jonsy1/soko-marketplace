@@ -3,6 +3,13 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { calculateOrdersProfit } from '@/lib/pricing';
 
+type ProductSale = {
+  name: string;
+  quantity: number;
+  revenue: number;
+  items: { price: number; costPrice: number | null; quantity: number }[];
+};
+
 export async function GET() {
   const session = await auth();
   const userId = (session?.user as any)?.id;
@@ -38,7 +45,6 @@ export async function GET() {
   };
   for (const o of orders) statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
 
-  // Revenue for the last 14 days (non-cancelled orders, by order date).
   const days: { date: string; revenue: number; orders: number }[] = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date();
@@ -56,11 +62,7 @@ export async function GET() {
     }
   }
 
-  // Top products by quantity sold (non-cancelled orders), now including profit.
-  const productSales: Record
-    string,
-    { name: string; quantity: number; revenue: number; items: { price: number; costPrice: number | null; quantity: number }[] }
-  > = {};
+  const productSales: Record<string, ProductSale> = {};
   for (const o of nonCancelled) {
     for (const item of o.items) {
       const key = item.productId;
@@ -72,6 +74,7 @@ export async function GET() {
       productSales[key].items.push({ price: item.price, costPrice: item.costPrice, quantity: item.quantity });
     }
   }
+
   const topProducts = Object.values(productSales)
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5)
@@ -86,8 +89,6 @@ export async function GET() {
       };
     });
 
-  // --- Low-stock intelligence: for each active product with quantity <= 5,
-  // estimate days-remaining from the last 30 days of sales for that product.
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -96,7 +97,6 @@ export async function GET() {
     select: { id: true, name: true, quantity: true },
   });
 
-  // Units sold per product in the last 30 days, from non-cancelled orders.
   const recentSalesByProduct: Record<string, number> = {};
   for (const o of nonCancelled) {
     if (new Date(o.createdAt) < thirtyDaysAgo) continue;
@@ -108,7 +108,7 @@ export async function GET() {
   const lowStock = lowStockRaw.map((p) => {
     const unitsSold30d = recentSalesByProduct[p.id] || 0;
     const avgDailySales = unitsSold30d / 30;
-    const hasEnoughHistory = unitsSold30d >= 3; // need a minimal signal before estimating
+    const hasEnoughHistory = unitsSold30d >= 3;
     return {
       id: p.id,
       name: p.name,
@@ -118,7 +118,6 @@ export async function GET() {
     };
   });
 
-  // --- Store health: percentage of key profile fields that are filled in.
   const healthChecks = [
     { key: 'name', label: 'Business name', done: !!business.name },
     { key: 'description', label: 'Business description', done: !!business.description },

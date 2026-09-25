@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { PLANS, PlanKey, formatPlanPrice } from '@/lib/plans';
 
 export default function BillingPage() {
@@ -67,14 +68,13 @@ export default function BillingPage() {
                 </button>
               )}
               {!isCurrent && plan.priceTZS > 0 && (
-                
+                <Link
                   href={waLink}
                   target="_blank"
-                  rel="noopener noreferrer"
                   className="btn btn-primary w-full text-center"
                 >
                   Contact us to upgrade
-                </a>
+                </Link>
               )}
             </div>
           );

@@ -33,6 +33,9 @@ export default function BillingPage() {
       <div className="grid md:grid-cols-3 gap-5">
         {Object.values(PLANS).map((plan) => {
           const isCurrent = plan.key === currentPlan;
+          const waMessage = 'Hi Soko, I would like to upgrade my shop to ' + plan.displayName + ' (' + formatPlanPrice(plan) + ').';
+          const waLink = 'https://wa.me/?text=' + encodeURIComponent(waMessage);
+
           return (
             <div
               key={plan.key}
@@ -53,17 +56,19 @@ export default function BillingPage() {
                   </li>
                 ))}
               </ul>
-              {isCurrent ? (
+              {isCurrent && (
                 <button disabled className="btn btn-outline w-full opacity-50 cursor-default">
                   Your current plan
                 </button>
-              ) : plan.priceTZS === 0 ? (
+              )}
+              {!isCurrent && plan.priceTZS === 0 && (
                 <button disabled className="btn btn-outline w-full opacity-50 cursor-default">
                   Downgrade not available here
                 </button>
-              ) : (
+              )}
+              {!isCurrent && plan.priceTZS > 0 && (
                 
-                  href={"https://wa.me/?text=" + encodeURIComponent("Hi Soko, I would like to upgrade my shop to " + plan.displayName + " (" + formatPlanPrice(plan) + ").")}
+                  href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary w-full text-center"

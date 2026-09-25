@@ -20,6 +20,12 @@ enum BusinessStatus {
   SUSPENDED
 }
 
+enum BusinessPlan {
+  FREE
+  PRO
+  BUSINESS
+}
+
 enum OrderStatus {
   NEW
   CONFIRMED
@@ -72,6 +78,7 @@ model Business {
   longitude   Float?
   phone       String
   status      BusinessStatus @default(PENDING)
+  plan        BusinessPlan   @default(FREE)
   isOpen      Boolean        @default(true)
   offersDelivery Boolean     @default(false)
   createdAt   DateTime       @default(now())

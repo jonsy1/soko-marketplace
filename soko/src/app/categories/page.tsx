@@ -24,7 +24,7 @@ export default function CategoriesPage() {
             c.children.reduce((sum: number, sub: any) => sum + sub._count.products, 0);
           return (
             <div key={c.id} className="card p-5">
-              <Link href={`/?category=${c.slug}`} className="block hover:text-teal-600">
+              <Link href={`/categories/${c.slug}`} className="block hover:text-teal-600">
                 <p className="font-semibold">{c.name}</p>
                 <p className="text-sm text-night/50 mt-1">
                   {total} {t.categories.products}
@@ -35,7 +35,7 @@ export default function CategoriesPage() {
                   {c.children.map((sub: any) => (
                     <Link
                       key={sub.id}
-                      href={`/?category=${sub.slug}`}
+                      href={`/categories/${sub.slug}`}
                       className="text-xs px-2 py-1 rounded-full border border-night/15 text-night/60 hover:border-teal-400 hover:text-teal-600"
                     >
                       {sub.name} ({sub._count.products})

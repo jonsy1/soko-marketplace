@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from '@/components/LanguageProvider';
 import { ProductGridSkeleton } from '@/components/Skeleton';
 import HeroSlider from '@/components/HeroSlider';
-import NearbyShopsSection from '@/components/NearbyShopsSection';
 
 // Dynamic imports
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
@@ -326,8 +325,27 @@ function HomeContent() {
         </section>
       )}
 
-      {/* SHOPS NEAR YOU - ramani/list */}
-      <NearbyShopsSection categories={categories} />
+      {/* SHOPS NEAR YOU - link to full page */}
+      <section className="max-w-6xl mx-auto px-4 py-4">
+        <Link
+          href="/nearby"
+          className="flex items-center gap-3 bg-market-50 border border-night/10 rounded-2xl p-4 hover:bg-market-100 transition"
+        >
+          <span className="w-11 h-11 rounded-full bg-market-500 text-white flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </span>
+          <div className="flex-1">
+            <p className="font-semibold text-night text-sm">Shops near you</p>
+            <p className="text-night/50 text-xs">See nearby shops on the map</p>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </Link>
+      </section>
 
       {/* PRODUCTS SECTION */}
       <section id="products-section" className="max-w-6xl mx-auto px-4 py-8">

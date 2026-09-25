@@ -217,6 +217,68 @@ export default function BusinessAnalyticsPage() {
         </div>
       </div>
 
+      {/* Reviews & reputation */}
+      <div className="card p-5 mb-8">
+        <h2 className="font-semibold mb-4">Reviews & reputation</h2>
+        {data.reviewSummary.count === 0 ? (
+          <p className="text-night/50 text-sm">You haven't received any reviews yet.</p>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="font-display text-2xl font-bold text-night">
+                {data.reviewSummary.average.toFixed(1)} ★
+              </span>
+              <span className="text-night/50 text-sm">
+                {data.reviewSummary.count} review{data.reviewSummary.count === 1 ? '' : 's'}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {data.reviewSummary.recent.map((r: any) => (
+                <div key={r.id} className="border-t border-night/5 pt-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">{r.customer?.name || 'Soko Customer'}</p>
+                    <span className="text-xs text-market-600 font-semibold">{r.rating} ★</span>
+                  </div>
+                  {r.comment && <p className="text-xs text-night/60 mt-0.5">{r.comment}</p>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Customer insights */}
+      <div className="card p-5 mb-8">
+        <h2 className="font-semibold mb-4">Customer insights</h2>
+        {data.customerInsights.totalCustomers === 0 ? (
+          <p className="text-night/50 text-sm">Customers will appear here after your first completed order.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-night/50 uppercase font-semibold">Customers</p>
+              <p className="font-display text-lg font-bold mt-1">{data.customerInsights.totalCustomers}</p>
+            </div>
+            <div>
+              <p className="text-xs text-night/50 uppercase font-semibold">New (30 days)</p>
+              <p className="font-display text-lg font-bold mt-1">{data.customerInsights.newCustomersThisMonth}</p>
+            </div>
+            <div>
+              <p className="text-xs text-night/50 uppercase font-semibold">Returning</p>
+              <p className="font-display text-lg font-bold mt-1">
+                {data.customerInsights.returningCustomers}
+                <span className="text-xs text-night/40 font-normal ml-1">
+                  ({data.customerInsights.repeatPurchaseRate}%)
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-night/50 uppercase font-semibold">Avg. order value</p>
+              <p className="font-display text-lg font-bold mt-1">{formatTZS(data.customerInsights.averageOrderValue)}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Low stock intelligence */}
       {data.lowStock.length > 0 && (
         <div className="card p-5">

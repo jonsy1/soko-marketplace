@@ -24,8 +24,13 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
   });
 
+  const allProducts = await prisma.product.findMany({
+    where: { businessId: business.id, active: true },
+    select: { id: true, name: true, quantity: true, imageUrl: true, createdAt: true },
+  });
+
   const followerCount = await prisma.follow.count({ where: { businessId: business.id } });
-  const productCount = await prisma.product.count({ where: { businessId: business.id, active: true } });
+  const productCount = allProducts.length;
 
   const nonCancelled = orders.filter((o) => o.status !== 'CANCELLED');
   const delivered = orders.filter((o) => o.status === 'DELIVERED');
@@ -92,11 +97,6 @@ export async function GET() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const lowStockRaw = await prisma.product.findMany({
-    where: { businessId: business.id, active: true, quantity: { lte: 5 } },
-    select: { id: true, name: true, quantity: true },
-  });
-
   const recentSalesByProduct: Record<string, number> = {};
   for (const o of nonCancelled) {
     if (new Date(o.createdAt) < thirtyDaysAgo) continue;
@@ -105,6 +105,7 @@ export async function GET() {
     }
   }
 
+  const lowStockRaw = allProducts.filter((p) => p.quantity <= 5);
   const lowStock = lowStockRaw.map((p) => {
     const unitsSold30d = recentSalesByProduct[p.id] || 0;
     const avgDailySales = unitsSold30d / 30;
@@ -118,6 +119,26 @@ export async function GET() {
     };
   });
 
+  // --- Product health: a simple, data-backed status per active product.
+  const productHealth = allProducts.map((p) => {
+    const unitsSold30d = recentSalesByProduct[p.id] || 0;
+    const ageInDays = (Date.now() - new Date(p.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+
+    let status = 'Performing well';
+    if (p.quantity === 0) {
+      status = 'Out of stock';
+    } else if (p.quantity <= 5) {
+      status = 'Low stock';
+    } else if (!p.imageUrl) {
+      status = 'Missing product image';
+    } else if (unitsSold30d === 0 && ageInDays > 14) {
+      status = 'No recent sales';
+    }
+
+    return { id: p.id, status };
+  });
+
+  // --- Store health.
   const healthChecks = [
     { key: 'name', label: 'Business name', done: !!business.name },
     { key: 'description', label: 'Business description', done: !!business.description },
@@ -131,6 +152,42 @@ export async function GET() {
   const completedCount = healthChecks.filter((c) => c.done).length;
   const storeHealthPercent = Math.round((completedCount / healthChecks.length) * 100);
 
+  // --- Reviews / reputation.
+  const [reviewAgg, recentReviews] = await Promise.all([
+    prisma.review.aggregate({
+      where: { businessId: business.id },
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+    prisma.review.findMany({
+      where: { businessId: business.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { customer: { select: { name: true } } },
+    }),
+  ]);
+
+  // --- Customer insights (from non-cancelled orders).
+  const ordersByCustomer: Record<string, { orders: any[]; firstOrderAt: Date }> = {};
+  for (const o of nonCancelled) {
+    if (!ordersByCustomer[o.customerId]) {
+      ordersByCustomer[o.customerId] = { orders: [], firstOrderAt: new Date(o.createdAt) };
+    }
+    ordersByCustomer[o.customerId].orders.push(o);
+    if (new Date(o.createdAt) < ordersByCustomer[o.customerId].firstOrderAt) {
+      ordersByCustomer[o.customerId].firstOrderAt = new Date(o.createdAt);
+    }
+  }
+  const customerIds = Object.keys(ordersByCustomer);
+  const totalCustomers = customerIds.length;
+  const newCustomersThisMonth = customerIds.filter(
+    (id) => ordersByCustomer[id].firstOrderAt >= thirtyDaysAgo
+  ).length;
+  const returningCustomers = customerIds.filter((id) => ordersByCustomer[id].orders.length > 1).length;
+  const repeatPurchaseRate = totalCustomers > 0 ? Math.round((returningCustomers / totalCustomers) * 100) : 0;
+  const totalCustomerRevenue = nonCancelled.reduce((sum, o) => sum + o.totalPrice, 0);
+  const averageOrderValue = nonCancelled.length > 0 ? Math.round(totalCustomerRevenue / nonCancelled.length) : 0;
+
   return NextResponse.json({
     followerCount,
     productCount,
@@ -141,9 +198,23 @@ export async function GET() {
     dailyRevenue: days,
     topProducts,
     lowStock,
+    productHealth,
     storeHealth: {
       percent: storeHealthPercent,
       checks: healthChecks,
+    },
+    reviewSummary: {
+      average: reviewAgg._avg.rating || 0,
+      count: reviewAgg._count.rating,
+      recent: recentReviews,
+    },
+    customerInsights: {
+      totalCustomers,
+      newCustomersThisMonth,
+      returningCustomers,
+      repeatPurchaseRate,
+      totalCustomerRevenue,
+      averageOrderValue,
     },
   });
 }

@@ -8,11 +8,20 @@ function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
 }
 
+const HEALTH_STYLE: Record<string, string> = {
+  'Performing well': 'bg-teal-50 text-teal-600',
+  'Out of stock': 'bg-clay/10 text-clay',
+  'Low stock': 'bg-market-100 text-market-600',
+  'Missing product image': 'bg-market-100 text-market-600',
+  'No recent sales': 'bg-night/5 text-night/50',
+};
+
 export default function ManageProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState('');
   const [deletingImageId, setDeletingImageId] = useState('');
+  const [productHealth, setProductHealth] = useState<Record<string, string>>({});
 
   function load() {
     fetch('/api/products?mine=1')
@@ -21,6 +30,16 @@ export default function ManageProductsPage() {
         setProducts(Array.isArray(data) ? data : []);
         setLoading(false);
       });
+    fetch('/api/business/analytics')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.productHealth) {
+          const map: Record<string, string> = {};
+          data.productHealth.forEach((p: any) => (map[p.id] = p.status));
+          setProductHealth(map);
+        }
+      })
+      .catch(() => {});
   }
 
   useEffect(load, []);
@@ -119,6 +138,11 @@ export default function ManageProductsPage() {
               >
                 {p.active ? 'Live' : 'Hidden'}
               </span>
+              {productHealth[p.id] && (
+                <span className={`badge ${HEALTH_STYLE[productHealth[p.id]] || 'bg-night/5 text-night/50'}`}>
+                  {productHealth[p.id]}
+                </span>
+              )}
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => copyWhatsAppReply(p)}

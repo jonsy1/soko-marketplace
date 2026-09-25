@@ -8,7 +8,6 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from './LanguageProvider';
 import { useCart } from './CartContext';
 
-// Dynamic import kwa LanguageToggle
 const LanguageToggle = dynamic(() => import('./LanguageToggle'), {
   ssr: false,
   loading: () => <div className="w-9 h-9 rounded-full bg-night/5 animate-pulse" />,
@@ -32,12 +31,10 @@ export default function NavbarClient({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Funga menyu baada ya kubonyeza kiungo
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
 
-  // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -47,7 +44,6 @@ export default function NavbarClient({
     }
   };
 
-  // Funga search overlay when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -58,12 +54,19 @@ export default function NavbarClient({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Focus input when search opens
   useEffect(() => {
     if (isSearchOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isSearchOpen]);
+
+  // Lock body scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
   return (
     <header className="bg-white text-night sticky top-0 z-40 border-b border-night/10">
@@ -113,7 +116,6 @@ export default function NavbarClient({
 
         {/* Right side - icons na hamburger */}
         <div className="flex items-center gap-2">
-          {/* Search icon - mobile */}
           <button
             onClick={() => setIsSearchOpen(true)}
             className="md:hidden flex items-center justify-center w-9 h-9 rounded-full text-night/60 hover:bg-night/5 transition-colors shrink-0"
@@ -125,10 +127,8 @@ export default function NavbarClient({
             </svg>
           </button>
 
-          {/* Language Toggle */}
           <LanguageToggle />
 
-          {/* Cart Icon */}
           <Link
             href="/cart"
             className="relative flex items-center justify-center w-9 h-9 rounded-full text-night/60 hover:bg-night/5 transition-colors shrink-0"
@@ -146,7 +146,6 @@ export default function NavbarClient({
             )}
           </Link>
 
-          {/* Desktop: My Account & Logout */}
           {isLoggedIn ? (
             <div className="hidden md:flex items-center gap-2">
               <Link
@@ -185,13 +184,13 @@ export default function NavbarClient({
 
           {/* Hamburger Menu - inaonekana kwenye simu tu */}
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMenuOpen(true)}
             className="md:hidden flex flex-col gap-1.5 p-1.5 hover:bg-night/5 rounded-lg transition shrink-0"
             aria-label="Toggle menu"
           >
-            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-night transition duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+            <span className="block w-5 h-0.5 bg-night" />
+            <span className="block w-5 h-0.5 bg-night" />
+            <span className="block w-5 h-0.5 bg-night" />
           </button>
         </div>
       </div>
@@ -231,91 +230,153 @@ export default function NavbarClient({
         </div>
       )}
 
-      {/* Mobile Menu - inajifungua chini ya navbar */}
-      <div className={`
-        md:hidden bg-white border-t border-night/10
-        transition-all duration-300 overflow-hidden
-        ${isMenuOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'}
-      `}>
-        <div className="px-4 py-4 flex flex-col gap-2 text-night/80">
-          {/* Navigation links for mobile */}
-          <Link href="/" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-            {t.nav.marketplace}
-          </Link>
-          <Link href="/categories" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-            {t.nav.categories}
-          </Link>
-          {role === 'BUSINESS' && (
-            <Link href="/dashboard/business" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-              {t.nav.myStore}
-            </Link>
-          )}
-          {role === 'ADMIN' && (
-            <Link href="/dashboard/admin" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-              {t.nav.admin}
-            </Link>
-          )}
-          {role === 'CUSTOMER' && (
-            <Link href="/register-business" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-              {t.nav.sellOnSoko}
-            </Link>
-          )}
+      {/* Backdrop for the slide-in drawer */}
+      <div
+        onClick={() => setIsMenuOpen(false)}
+        className={`md:hidden fixed inset-0 z-40 bg-night/50 backdrop-blur-sm transition-opacity duration-300 ${
+          isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
 
-          <div className="border-t border-night/10 my-2"></div>
-
-          {/* Cart (mobile) */}
-          <Link href="/cart" className="py-2 hover:text-market-500 transition flex items-center gap-2" onClick={handleLinkClick}>
-            🛒 Cart
-            {count > 0 && (
-              <span className="bg-clay-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {count}
-              </span>
-            )}
-          </Link>
-
-          {/* My Account / Login / Register (mobile) */}
+      {/* Mobile Menu - slide-in drawer from the right */}
+      <div
+        className={`md:hidden fixed top-0 right-0 z-50 h-full w-[82%] max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
+          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 h-16 border-b border-night/10 bg-market-50">
           {isLoggedIn ? (
-            <>
-              <Link href="/account" className="py-2 hover:text-market-500 transition flex items-center gap-2" onClick={handleLinkClick}>
-                👤 {t.nav.hi}, {name?.split(' ')[0]}
-              </Link>
-              <button
-                onClick={() => {
-                  handleLinkClick();
-                  signOut({ redirectTo: '/' });
-                }}
-                className="py-2 text-left hover:text-market-500 transition flex items-center gap-2"
-              >
-                🚪 {t.nav.signOut}
-              </button>
-            </>
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-market-500 text-white flex items-center justify-center font-display font-bold">
+                {name?.[0]?.toUpperCase() || 'S'}
+              </span>
+              <div>
+                <p className="text-xs text-night/50">{t.nav.hi}</p>
+                <p className="font-semibold text-night text-sm leading-tight">{name?.split(' ')[0]}</p>
+              </div>
+            </div>
           ) : (
-            <>
-              <Link href="/login" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-                {t.nav.login}
-              </Link>
-              <Link href="/register" className="py-2 hover:text-market-500 transition" onClick={handleLinkClick}>
-                {t.nav.signup}
-              </Link>
-            </>
+            <span className="font-display font-bold text-lg">
+              SOKO<span className="text-market-500">.</span>
+            </span>
           )}
+          <button
+            onClick={() => setIsMenuOpen(false)}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-night/50 hover:bg-white/70 transition"
+            aria-label="Close menu"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
 
-          {/* Footer Links - Terms, Privacy, About, Contact */}
-          <div className="border-t border-night/10 my-2"></div>
-          <div className="flex flex-col gap-2 text-sm text-night/50">
-            <Link href="/terms" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
-              📜 Terms of Service
+        {/* Drawer body — scrollable */}
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <nav className="flex flex-col gap-0.5">
+            <Link href="/" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+              <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 10.5L12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" /></svg>
+              </span>
+              {t.nav.marketplace}
             </Link>
-            <Link href="/privacy" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
-              🔒 Privacy Policy
+            <Link href="/categories" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+              <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M14.5 9.5L13 13l-3.5 1.5L11 11l3.5-1.5z" /></svg>
+              </span>
+              {t.nav.categories}
             </Link>
-            <Link href="/about" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
-              ℹ️ About Us
+            {role === 'BUSINESS' && (
+              <Link href="/dashboard/business" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+                <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l1.5-5h15L21 9" /><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9" /></svg>
+                </span>
+                {t.nav.myStore}
+              </Link>
+            )}
+            {role === 'ADMIN' && (
+              <Link href="/dashboard/admin" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+                <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z" /></svg>
+                </span>
+                {t.nav.admin}
+              </Link>
+            )}
+            {role === 'CUSTOMER' && (
+              <Link href="/register-business" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+                <span className="w-9 h-9 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                </span>
+                {t.nav.sellOnSoko}
+              </Link>
+            )}
+
+            <Link href="/cart" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+              <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0 relative">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="9" cy="20" r="1.4" /><circle cx="17" cy="20" r="1.4" /><path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" /></svg>
+              </span>
+              Cart
+              {count > 0 && (
+                <span className="ml-auto bg-clay-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>
+              )}
             </Link>
-            <Link href="/contact" className="py-1 hover:text-market-500 transition" onClick={handleLinkClick}>
-              📧 Contact Us
+
+            {isLoggedIn && (
+              <Link href="/account" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
+                <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6" /></svg>
+                </span>
+                My Account
+              </Link>
+            )}
+          </nav>
+
+          <div className="border-t border-night/10 my-3" />
+
+          <div className="flex flex-col gap-0.5">
+            <Link href="/terms" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-night/5 transition text-night/60 text-sm">
+              <span className="w-7 h-7 flex items-center justify-center shrink-0">📜</span>
+              Terms of Service
+            </Link>
+            <Link href="/privacy" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-night/5 transition text-night/60 text-sm">
+              <span className="w-7 h-7 flex items-center justify-center shrink-0">🔒</span>
+              Privacy Policy
+            </Link>
+            <Link href="/about" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-night/5 transition text-night/60 text-sm">
+              <span className="w-7 h-7 flex items-center justify-center shrink-0">ℹ️</span>
+              About Us
+            </Link>
+            <Link href="/contact" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-night/5 transition text-night/60 text-sm">
+              <span className="w-7 h-7 flex items-center justify-center shrink-0">📧</span>
+              Contact Us
             </Link>
           </div>
+        </div>
+
+        {/* Drawer footer — auth actions */}
+        <div className="border-t border-night/10 p-4">
+          {isLoggedIn ? (
+            <button
+              onClick={() => {
+                handleLinkClick();
+                signOut({ redirectTo: '/' });
+              }}
+              className="btn btn-outline w-full !border-night/15 !text-night/70"
+            >
+              {t.nav.signOut}
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <Link href="/login" onClick={handleLinkClick} className="btn btn-outline flex-1 !border-night/15 !text-night/70 text-center">
+                {t.nav.login}
+              </Link>
+              <Link href="/register" onClick={handleLinkClick} className="btn btn-secondary flex-1 text-center">
+                {t.nav.signup}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

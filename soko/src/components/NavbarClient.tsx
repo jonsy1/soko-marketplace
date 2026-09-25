@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -60,7 +61,6 @@ export default function NavbarClient({
     }
   }, [isSearchOpen]);
 
-  // Lock body scroll while the mobile drawer is open.
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? 'hidden' : '';
     return () => {
@@ -312,16 +312,6 @@ export default function NavbarClient({
                 {t.nav.sellOnSoko}
               </Link>
             )}
-
-            <Link href="/cart" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">
-              <span className="w-9 h-9 rounded-full bg-market-100 text-market-600 flex items-center justify-center shrink-0 relative">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="9" cy="20" r="1.4" /><circle cx="17" cy="20" r="1.4" /><path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" /></svg>
-              </span>
-              Cart
-              {count > 0 && (
-                <span className="ml-auto bg-clay-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{count}</span>
-              )}
-            </Link>
 
             {isLoggedIn && (
               <Link href="/account" onClick={handleLinkClick} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-market-50 transition text-night font-medium">

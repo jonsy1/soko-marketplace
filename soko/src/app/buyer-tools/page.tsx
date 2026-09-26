@@ -54,7 +54,7 @@ const TOOLS = [
         <circle cx="17.5" cy="18.5" r="1.5" />
       </svg>
     ),
-    available: false,
+    available: true,
   },
 ];
 

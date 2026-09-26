@@ -122,7 +122,10 @@ export default function ProductPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
-      <div className="aspect-square bg-market-100 rounded-card overflow-hidden relative flex items-center justify-center">
+      <div
+        className="aspect-square bg-market-100 rounded-card overflow-hidden relative flex items-center justify-center"
+        style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
+      >
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
@@ -130,10 +133,11 @@ export default function ProductPage() {
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
-            className="object-cover"
+            draggable={false}
+            className="object-cover pointer-events-none"
           />
         ) : (
-          <span className="text-market-600 font-display text-6xl font-bold opacity-40">
+          <span className="text-market-600 font-display text-6xl font-bold opacity-40 pointer-events-none">
             {product.name?.[0]?.toUpperCase()}
           </span>
         )}

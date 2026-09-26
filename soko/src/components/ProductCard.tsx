@@ -7,6 +7,7 @@ import { useCart } from './CartContext';
 import ContactSellerModal from './ContactSellerModal';
 import { getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 import { useUserLocation } from './UserLocationContext';
+import { useWishlist } from './WishlistContext';
 
 interface ProductCardProps {
   product: {
@@ -36,11 +37,12 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [isAdded, setIsAdded] = useState(false);
-  const [isWishlist, setIsWishlist] = useState(false);
   const [distance, setDistance] = useState<string | null>(null);
   const [showContact, setShowContact] = useState(false);
   const userLocation = useUserLocation();
+  const inWishlist = isWishlisted(product.id);
 
   const avgRating = product.business?.avgRating || 0;
   const reviewCount = product.business?.reviewCount || 0;
@@ -122,11 +124,17 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Wishlist button */}
         <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
-            onClick={() => setIsWishlist(!isWishlist)}
-            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleWishlist(product.id);
+            }}
+            style={{ touchAction: 'manipulation' }}
+            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition z-10 relative"
             aria-label="Wishlist"
           >
-            <span className="text-lg">{isWishlist ? '❤️' : '🤍'}</span>
+            <span className="text-lg">{inWishlist ? '❤️' : '🤍'}</span>
           </button>
         </div>
 

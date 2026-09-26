@@ -54,18 +54,21 @@ export default function ProductPage() {
       return;
     }
     setWishlistBusy(true);
-    if (inWishlist) {
-      await fetch(`/api/wishlist?productId=${id}`, { method: 'DELETE' });
-      setInWishlist(false);
-    } else {
-      await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: id }),
-      });
-      setInWishlist(true);
+    try {
+      if (inWishlist) {
+        const res = await fetch(`/api/wishlist?productId=${id}`, { method: 'DELETE' });
+        if (res.ok) setInWishlist(false);
+      } else {
+        const res = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: id }),
+        });
+        if (res.ok) setInWishlist(true);
+      }
+    } finally {
+      setWishlistBusy(false);
     }
-    setWishlistBusy(false);
   }
 
   async function placeOrder() {
@@ -135,10 +138,16 @@ export default function ProductPage() {
           </span>
         )}
         <button
-          onClick={toggleWishlist}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist();
+          }}
           disabled={wishlistBusy}
           aria-label="Save to wishlist"
-          className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition ${
+          style={{ touchAction: 'manipulation' }}
+          className={`absolute top-3 right-3 z-10 w-11 h-11 rounded-full flex items-center justify-center shadow-md transition ${
             inWishlist ? 'bg-clay-500 text-white' : 'bg-white/90 text-night/50 hover:text-clay-500'
           }`}
         >

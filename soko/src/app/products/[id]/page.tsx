@@ -27,12 +27,46 @@ export default function ProductPage() {
   const [success, setSuccess] = useState('');
   const [placing, setPlacing] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [inWishlist, setInWishlist] = useState(false);
+  const [wishlistBusy, setWishlistBusy] = useState(false);
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
       .then((r) => r.json())
       .then(setProduct);
   }, [id]);
+
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch('/api/wishlist')
+      .then((r) => r.json())
+      .then((items) => {
+        if (Array.isArray(items)) {
+          setInWishlist(items.some((i: any) => i.product.id === id));
+        }
+      })
+      .catch(() => {});
+  }, [id, session]);
+
+  async function toggleWishlist() {
+    if (!session?.user) {
+      router.push('/login');
+      return;
+    }
+    setWishlistBusy(true);
+    if (inWishlist) {
+      await fetch(`/api/wishlist?productId=${id}`, { method: 'DELETE' });
+      setInWishlist(false);
+    } else {
+      await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: id }),
+      });
+      setInWishlist(true);
+    }
+    setWishlistBusy(false);
+  }
 
   async function placeOrder() {
     setError('');
@@ -100,6 +134,18 @@ export default function ProductPage() {
             {product.name?.[0]?.toUpperCase()}
           </span>
         )}
+        <button
+          onClick={toggleWishlist}
+          disabled={wishlistBusy}
+          aria-label="Save to wishlist"
+          className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition ${
+            inWishlist ? 'bg-clay-500 text-white' : 'bg-white/90 text-night/50 hover:text-clay-500'
+          }`}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
+          </svg>
+        </button>
       </div>
 
       <div>

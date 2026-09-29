@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { sendPushToUser } from '@/lib/push';
+import { sendEmail, orderStatusEmailForCustomer, orderCancelledEmailForSeller } from '@/lib/email';
 
-// Valid forward-only transitions a seller/admin can make.
-// Customers can only ever move to CANCELLED (checked separately below).
 const VALID_NEXT_STATUS: Record<string, string[]> = {
   NEW: ['CONFIRMED', 'CANCELLED'],
   CONFIRMED: ['PROCESSING', 'CANCELLED'],
@@ -37,8 +36,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Not authorized.' }, { status: 403 });
   }
 
-  // For the customer-history section on the order detail page: how many
-  // other orders has this customer placed with this same business.
   let customerHistory: { previousOrders: number; totalSpent: number } | null = null;
   if (isSeller || role === 'ADMIN') {
     const previous = await prisma.order.findMany({
@@ -64,7 +61,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const role = (session?.user as any)?.role;
   if (!userId) return NextResponse.json({ error: 'You must be logged in.' }, { status: 401 });
 
-  const order = await prisma.order.findUnique({ where: { id: params.id }, include: { business: true } });
+  const order = await prisma.order.findUnique({
+    where: { id: params.id },
+    include: {
+      business: { include: { owner: { select: { email: true } } } },
+      customer: { select: { name: true, email: true } },
+    },
+  });
   if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
 
   const isSeller = order.business.ownerId === userId;
@@ -84,7 +87,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     if (isCustomer && !isSeller && role !== 'ADMIN') {
-      // Customers may only cancel, and only while the order is still NEW.
       if (status !== 'CANCELLED') {
         return NextResponse.json({ error: 'Customers can only cancel an order.' }, { status: 403 });
       }
@@ -92,7 +94,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         return NextResponse.json({ error: 'This order can no longer be cancelled.' }, { status: 400 });
       }
     } else {
-      // Seller/admin: enforce the forward-only status flow server-side.
       const allowedNext = VALID_NEXT_STATUS[order.status] || [];
       if (!allowedNext.includes(status)) {
         return NextResponse.json(
@@ -111,7 +112,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 
   if (paymentStatus) {
-    // Only the seller (or admin) can change payment status.
     if (!isSeller && role !== 'ADMIN') {
       return NextResponse.json({ error: 'Not authorized to change payment status.' }, { status: 403 });
     }
@@ -134,6 +134,26 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       body: `${order.business.name} confirmed your order.`,
       url: '/orders',
     }).catch(() => {});
+  }
+
+  // Email the customer on any status change made by the seller/admin (not
+  // triggered when the customer themself cancels their own order).
+  if (status && (isSeller || role === 'ADMIN') && order.customer.email) {
+    const { subject, html } = orderStatusEmailForCustomer({
+      orderNumber: order.orderNumber,
+      businessName: order.business.name,
+      status,
+    });
+    sendEmail(order.customer.email, subject, html).catch(() => {});
+  }
+
+  // Email the seller when the customer cancels their own order.
+  if (status === 'CANCELLED' && isCustomer && !isSeller && order.business.owner?.email) {
+    const { subject, html } = orderCancelledEmailForSeller({
+      orderNumber: order.orderNumber,
+      customerName: order.customer.name,
+    });
+    sendEmail(order.business.owner.email, subject, html).catch(() => {});
   }
 
   return NextResponse.json(updated);

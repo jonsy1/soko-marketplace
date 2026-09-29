@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { sendPushToUser } from '@/lib/push';
+import { sendEmail, newOrderEmailForSeller } from '@/lib/email';
 import { getEffectivePrice } from '@/lib/pricing';
 
 function formatTZS(n: number) {
@@ -28,8 +29,6 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
 
-  // ?counts=1 returns { NEW: 3, CONFIRMED: 4, ... } for the current scope,
-  // ignoring status filter but respecting the same ownership rules above.
   if (searchParams.get('counts') === '1') {
     const grouped = await prisma.order.groupBy({
       by: ['status'],
@@ -69,7 +68,6 @@ export async function GET(req: Request) {
   }
 
   if (orderNumberQuery) {
-    // Accept "#SK-10024", "SK-10024", "10024" etc — pull out the digits.
     const digits = orderNumberQuery.replace(/\D/g, '');
     const parsed = parseInt(digits, 10);
     if (!isNaN(parsed)) where.orderNumber = parsed;
@@ -107,7 +105,7 @@ export async function POST(req: Request) {
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    include: { business: true },
+    include: { business: { include: { owner: { select: { email: true } } } } },
   });
 
   if (!product || !product.active) {
@@ -141,6 +139,7 @@ export async function POST(req: Request) {
         ],
       },
     },
+    include: { customer: { select: { name: true } } },
   });
 
   await prisma.product.update({
@@ -153,6 +152,16 @@ export async function POST(req: Request) {
     body: `${quantity} item${quantity > 1 ? 's' : ''} — ${formatTZS(totalPrice)}`,
     url: '/dashboard/business/orders',
   }).catch(() => {});
+
+  if (product.business.owner?.email) {
+    const { subject, html } = newOrderEmailForSeller({
+      orderNumber: order.orderNumber,
+      customerName: order.customer.name,
+      totalPrice,
+      itemsSummary: `${quantity}× ${product.name}`,
+    });
+    sendEmail(product.business.owner.email, subject, html).catch(() => {});
+  }
 
   return NextResponse.json({ order });
 }

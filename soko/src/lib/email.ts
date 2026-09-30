@@ -2,10 +2,8 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Using Resend's shared sandbox sender for now. Once sokotz.com's domain is
-// verified with Resend (DNS records added), switch this to something like
-// "Soko <notifications@sokotz.com>" so emails come from your own domain.
-const FROM_ADDRESS = 'Soko <onboarding@resend.dev>';
+// sokotz.com is verified with Resend, so emails send from our own domain.
+const FROM_ADDRESS = 'Soko <notifications@sokotz.com>';
 
 export async function sendEmail(to: string, subject: string, html: string) {
   if (!process.env.RESEND_API_KEY) {

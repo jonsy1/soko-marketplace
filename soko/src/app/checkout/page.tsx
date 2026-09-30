@@ -11,7 +11,7 @@ export default function CheckoutPage() {
   const { data: session } = useSession();
   const { items, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
-  const [deliveryMethod, setDeliveryMethod] = useState('PICKUP');
+  const [deliveryMethod, setDeliveryMethod] = useState('CUSTOMER_PICKUP');
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
@@ -37,6 +37,11 @@ export default function CheckoutPage() {
 
     try {
       for (const item of items) {
+        const finalNote =
+          deliveryMethod === 'SELLER_DELIVERY' && address.trim()
+            ? `${note ? note + ' - ' : ''}Delivery address: ${address.trim()}`
+            : note || '';
+
         const res = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -44,23 +49,24 @@ export default function CheckoutPage() {
             productId: item.productId,
             quantity: item.quantity,
             deliveryOption: deliveryMethod,
-            note: note || '',
+            note: finalNote,
           }),
         });
 
-        if (!res.ok) {
-          let errorMsg = 'Failed to place order';
-          try {
-            const data = await res.json();
-            errorMsg = data.error || errorMsg;
-          } catch {
-            const text = await res.text();
-            errorMsg = text || errorMsg;
-          }
-          throw new Error(errorMsg);
+        // Read the response body exactly once, as text, then try to parse
+        // it as JSON. This avoids the "body stream already read" error that
+        // happens when calling res.json() and res.text() on the same response.
+        const rawBody = await res.text();
+        let data: any = {};
+        try {
+          data = rawBody ? JSON.parse(rawBody) : {};
+        } catch {
+          // Response wasn't JSON - fall through with an empty object.
         }
 
-        await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to place order');
+        }
       }
 
       clearCart();
@@ -99,9 +105,9 @@ export default function CheckoutPage() {
             <label className="block text-sm font-medium text-night/60 mb-2">Delivery Method</label>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => setDeliveryMethod('PICKUP')}
+                onClick={() => setDeliveryMethod('CUSTOMER_PICKUP')}
                 className={`p-4 rounded-xl border-2 text-center transition ${
-                  deliveryMethod === 'PICKUP'
+                  deliveryMethod === 'CUSTOMER_PICKUP'
                     ? 'border-market-500 bg-market-50'
                     : 'border-night/15 hover:border-night/30'
                 }`}
@@ -110,9 +116,9 @@ export default function CheckoutPage() {
                 <span className="text-sm font-medium">Pickup</span>
               </button>
               <button
-                onClick={() => setDeliveryMethod('DELIVERY')}
+                onClick={() => setDeliveryMethod('SELLER_DELIVERY')}
                 className={`p-4 rounded-xl border-2 text-center transition ${
-                  deliveryMethod === 'DELIVERY'
+                  deliveryMethod === 'SELLER_DELIVERY'
                     ? 'border-market-500 bg-market-50'
                     : 'border-night/15 hover:border-night/30'
                 }`}
@@ -123,7 +129,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {deliveryMethod === 'DELIVERY' && (
+          {deliveryMethod === 'SELLER_DELIVERY' && (
             <div className="mb-6">
               <label className="block text-sm font-medium text-night/60 mb-1">Delivery Address</label>
               <textarea
@@ -156,7 +162,7 @@ export default function CheckoutPage() {
 
           <button
             onClick={handlePlaceOrder}
-            disabled={loading || (deliveryMethod === 'DELIVERY' && !address.trim())}
+            disabled={loading || (deliveryMethod === 'SELLER_DELIVERY' && !address.trim())}
             className="w-full py-3 bg-night text-white rounded-xl font-semibold hover:bg-market-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Placing Order...' : 'Place Order'}

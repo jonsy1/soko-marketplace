@@ -80,7 +80,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     create: { width: width, height: height, channels: 4, background: { r: 22, g: 35, b: 61, alpha: 1 } },
   });
 
-  const layers: sharp.OverlayOptions[] = [];
+  const layers: any[] = [];
   if (photoBuffer) layers.push({ input: photoBuffer, top: 0, left: 0 });
   layers.push({ input: Buffer.from(overlaySvg), top: 0, left: 0 });
 

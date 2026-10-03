@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
+import QRCode from 'qrcode';
 import { prisma } from '@/lib/prisma';
 import { getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 
@@ -15,10 +16,14 @@ function escapeXml(s: string) {
     .replace(/"/g, '&quot;');
 }
 
+function truncate(s: string, max: number) {
+  return s.length > max ? s.slice(0, max) + '...' : s;
+}
+
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const product = await prisma.product.findUnique({
     where: { id: params.id },
-    include: { business: { select: { name: true, slug: true } } },
+    include: { business: { select: { name: true, slug: true, phone: true, location: true } } },
   });
 
   if (!product || !product.active) {
@@ -49,7 +54,28 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     }
   }
 
-  const productNameSafe = product.name.length > 34 ? product.name.slice(0, 34) + '...' : product.name;
+  const productNameSafe = truncate(product.name, 34);
+  const shopNameSafe = truncate(product.business.name, 28);
+  const locationSafe = product.business.location ? truncate(product.business.location, 40) : '';
+  const phoneSafe = product.business.phone ? truncate(product.business.phone, 20) : '';
+  const shopLink = 'sokotz.com/business/' + product.business.slug;
+
+  // QR code pointing to the shop page. If generation fails, the poster still works without it.
+  const qrSize = 170;
+  const qrLeft = width - 56 - qrSize;
+  let qrBuffer: Buffer | null = null;
+  try {
+    qrBuffer = await QRCode.toBuffer('https://www.sokotz.com/business/' + product.business.slug, {
+      type: 'png',
+      width: qrSize,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+    });
+  } catch {
+    qrBuffer = null;
+  }
+
+  const y0 = photoHeight;
 
   const overlaySvg = '<svg width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" xmlns="http://www.w3.org/2000/svg">' +
     '<defs>' +
@@ -70,10 +96,28 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         '<text x="' + (width - 110) + '" y="83" font-family="sans-serif" font-size="30" font-weight="800" text-anchor="middle" fill="#FFFFFF">-' + product.discountPercent + '%</text>'
       : '') +
     '<rect x="0" y="' + (photoHeight - 180) + '" width="' + width + '" height="180" fill="url(#fade)"/>' +
-    '<rect x="0" y="' + photoHeight + '" width="' + width + '" height="' + infoHeight + '" fill="#16233D"/>' +
-    '<text x="56" y="' + (photoHeight + 86) + '" font-family="sans-serif" font-size="46" font-weight="800" fill="#FFFFFF">' + escapeXml(productNameSafe) + '</text>' +
-    '<text x="56" y="' + (photoHeight + 150) + '" font-family="sans-serif" font-size="56" font-weight="800" fill="#2F6FED">' + formatTZS(price) + '</text>' +
-    '<text x="56" y="' + (photoHeight + 210) + '" font-family="sans-serif" font-size="30" fill="#9CA9BC">' + escapeXml(product.business.name) + ' - sokotz.com</text>' +
+    '<rect x="0" y="' + y0 + '" width="' + width + '" height="' + infoHeight + '" fill="#16233D"/>' +
+    // Product name + price
+    '<text x="56" y="' + (y0 + 70) + '" font-family="sans-serif" font-size="44" font-weight="800" fill="#FFFFFF">' + escapeXml(productNameSafe) + '</text>' +
+    '<text x="56" y="' + (y0 + 135) + '" font-family="sans-serif" font-size="56" font-weight="800" fill="#F0602E">' + formatTZS(price) + '</text>' +
+    // Divider
+    '<rect x="56" y="' + (y0 + 165) + '" width="968" height="2" fill="#2B3B5C"/>' +
+    // Shop details
+    '<text x="56" y="' + (y0 + 225) + '" font-family="sans-serif" font-size="38" font-weight="800" fill="#FFFFFF">' + escapeXml(shopNameSafe) + '</text>' +
+    (locationSafe
+      ? '<text x="56" y="' + (y0 + 272) + '" font-family="sans-serif" font-size="28" fill="#9CA9BC">Eneo: ' + escapeXml(locationSafe) + '</text>'
+      : '') +
+    (phoneSafe
+      ? '<text x="56" y="' + (y0 + 326) + '" font-family="sans-serif" font-size="34" font-weight="800" fill="#FFFFFF">Simu: ' + escapeXml(phoneSafe) + '</text>'
+      : '') +
+    // QR caption
+    (qrBuffer
+      ? '<text x="' + (qrLeft + qrSize / 2) + '" y="' + (y0 + 370) + '" font-family="sans-serif" font-size="20" text-anchor="middle" fill="#9CA9BC">Skani kuona duka</text>'
+      : '') +
+    // Bottom call-to-action bar
+    '<rect x="56" y="' + (y0 + 380) + '" width="968" height="110" rx="24" fill="#2F6FED"/>' +
+    '<text x="' + (width / 2) + '" y="' + (y0 + 428) + '" font-family="sans-serif" font-size="32" font-weight="800" text-anchor="middle" fill="#FFFFFF">Nunua kwenye sokotz.com</text>' +
+    '<text x="' + (width / 2) + '" y="' + (y0 + 467) + '" font-family="sans-serif" font-size="26" text-anchor="middle" fill="#DCE7FF">' + escapeXml(shopLink) + '</text>' +
     '</svg>';
 
   const composed = sharp({
@@ -83,6 +127,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const layers: any[] = [];
   if (photoBuffer) layers.push({ input: photoBuffer, top: 0, left: 0 });
   layers.push({ input: Buffer.from(overlaySvg), top: 0, left: 0 });
+  if (qrBuffer) layers.push({ input: qrBuffer, top: y0 + 185, left: qrLeft });
 
   const png = await composed.composite(layers).png().toBuffer();
 

@@ -32,6 +32,20 @@ async function loadFonts(origin: string) {
   return fontCache;
 }
 
+// Measures text glyph-by-glyph. This deliberately avoids font.getAdvanceWidth()/getPath(text),
+// because those read the GSUB table, which opentype.js cannot parse for the Inter font.
+function measureText(font: opentype.Font, text: string, size: number) {
+  const scale = size / font.unitsPerEm;
+  let width = 0;
+  const items: { glyph: opentype.Glyph; offset: number }[] = [];
+  Array.from(text).forEach((ch) => {
+    const glyph = font.charToGlyph(ch);
+    items.push({ glyph: glyph, offset: width });
+    width += (glyph.advanceWidth || 0) * scale;
+  });
+  return { items: items, width: width };
+}
+
 // Draws text as vector shapes so the server does not need any installed fonts.
 function textPath(
   font: opentype.Font,
@@ -42,9 +56,12 @@ function textPath(
   fill: string,
   anchor: 'start' | 'middle' = 'start'
 ) {
-  const w = font.getAdvanceWidth(text, size);
-  const startX = anchor === 'middle' ? x - w / 2 : x;
-  const d = font.getPath(text, startX, y, size).toPathData(2);
+  const m = measureText(font, text, size);
+  const startX = anchor === 'middle' ? x - m.width / 2 : x;
+  let d = '';
+  m.items.forEach((it) => {
+    d += it.glyph.getPath(startX + it.offset, y, size).toPathData(2);
+  });
   return '<path d="' + d + '" fill="' + fill + '"/>';
 }
 
@@ -115,45 +132,51 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const y0 = photoHeight;
 
   // Logo: "SOKO" in dark, "." in blue
-  const sokoWidth = bold.getAdvanceWidth('SOKO', 32);
+  const sokoWidth = measureText(bold, 'SOKO', 32).width;
 
-  const overlaySvg = '<svg width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" xmlns="http://www.w3.org/2000/svg">' +
-    '<defs>' +
-    '<linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">' +
-    '<stop offset="0%" stop-color="#2F6FED"/>' +
-    '<stop offset="100%" stop-color="#16233D"/>' +
-    '</linearGradient>' +
-    '<linearGradient id="fade" x1="0%" y1="0%" x2="0%" y2="100%">' +
-    '<stop offset="0%" stop-color="#000000" stop-opacity="0"/>' +
-    '<stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>' +
-    '</linearGradient>' +
-    '</defs>' +
-    (!photoBuffer ? '<rect width="' + width + '" height="' + photoHeight + '" fill="url(#bg)"/>' : '') +
-    '<rect x="40" y="40" width="190" height="64" rx="32" fill="#FFFFFF"/>' +
-    textPath(bold, 'SOKO', 68, 83, 32, '#16233D') +
-    textPath(bold, '.', 68 + sokoWidth, 83, 32, '#2F6FED') +
-    (discounted
-      ? '<rect x="' + (width - 180) + '" y="40" width="140" height="64" rx="32" fill="#F0602E"/>' +
-        textPath(bold, '-' + product.discountPercent + '%', width - 110, 83, 30, '#FFFFFF', 'middle')
-      : '') +
-    '<rect x="0" y="' + (photoHeight - 180) + '" width="' + width + '" height="180" fill="url(#fade)"/>' +
-    '<rect x="0" y="' + y0 + '" width="' + width + '" height="' + infoHeight + '" fill="#16233D"/>' +
-    // Product name + price
-    textPath(bold, productNameSafe, 56, y0 + 70, 44, '#FFFFFF') +
-    textPath(bold, formatTZS(price), 56, y0 + 135, 56, '#F0602E') +
-    // Divider
-    '<rect x="56" y="' + (y0 + 165) + '" width="968" height="2" fill="#2B3B5C"/>' +
-    // Shop details
-    textPath(bold, shopNameSafe, 56, y0 + 225, 38, '#FFFFFF') +
-    (locationSafe ? textPath(regular, 'Eneo: ' + locationSafe, 56, y0 + 272, 28, '#9CA9BC') : '') +
-    (phoneSafe ? textPath(bold, 'Simu: ' + phoneSafe, 56, y0 + 326, 34, '#FFFFFF') : '') +
-    // QR caption
-    (qrBuffer ? textPath(regular, 'Skani kuona duka', qrLeft + qrSize / 2, y0 + 370, 20, '#9CA9BC', 'middle') : '') +
-    // Bottom call-to-action bar
-    '<rect x="56" y="' + (y0 + 380) + '" width="968" height="110" rx="24" fill="#2F6FED"/>' +
-    textPath(bold, 'Nunua kwenye sokotz.com', width / 2, y0 + 428, 32, '#FFFFFF', 'middle') +
-    textPath(regular, shopLink, width / 2, y0 + 467, 26, '#DCE7FF', 'middle') +
-    '</svg>';
+  let overlaySvg = '';
+  try {
+    overlaySvg = '<svg width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+      '<linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="#2F6FED"/>' +
+      '<stop offset="100%" stop-color="#16233D"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="fade" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="#000000" stop-opacity="0"/>' +
+      '<stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>' +
+      '</linearGradient>' +
+      '</defs>' +
+      (!photoBuffer ? '<rect width="' + width + '" height="' + photoHeight + '" fill="url(#bg)"/>' : '') +
+      '<rect x="40" y="40" width="190" height="64" rx="32" fill="#FFFFFF"/>' +
+      textPath(bold, 'SOKO', 68, 83, 32, '#16233D') +
+      textPath(bold, '.', 68 + sokoWidth, 83, 32, '#2F6FED') +
+      (discounted
+        ? '<rect x="' + (width - 180) + '" y="40" width="140" height="64" rx="32" fill="#F0602E"/>' +
+          textPath(bold, '-' + product.discountPercent + '%', width - 110, 83, 30, '#FFFFFF', 'middle')
+        : '') +
+      '<rect x="0" y="' + (photoHeight - 180) + '" width="' + width + '" height="180" fill="url(#fade)"/>' +
+      '<rect x="0" y="' + y0 + '" width="' + width + '" height="' + infoHeight + '" fill="#16233D"/>' +
+      // Product name + price
+      textPath(bold, productNameSafe, 56, y0 + 70, 44, '#FFFFFF') +
+      textPath(bold, formatTZS(price), 56, y0 + 135, 56, '#F0602E') +
+      // Divider
+      '<rect x="56" y="' + (y0 + 165) + '" width="968" height="2" fill="#2B3B5C"/>' +
+      // Shop details
+      textPath(bold, shopNameSafe, 56, y0 + 225, 38, '#FFFFFF') +
+      (locationSafe ? textPath(regular, 'Eneo: ' + locationSafe, 56, y0 + 272, 28, '#9CA9BC') : '') +
+      (phoneSafe ? textPath(bold, 'Simu: ' + phoneSafe, 56, y0 + 326, 34, '#FFFFFF') : '') +
+      // QR caption
+      (qrBuffer ? textPath(regular, 'Skani kuona duka', qrLeft + qrSize / 2, y0 + 370, 20, '#9CA9BC', 'middle') : '') +
+      // Bottom call-to-action bar
+      '<rect x="56" y="' + (y0 + 380) + '" width="968" height="110" rx="24" fill="#2F6FED"/>' +
+      textPath(bold, 'Nunua kwenye sokotz.com', width / 2, y0 + 428, 32, '#FFFFFF', 'middle') +
+      textPath(regular, shopLink, width / 2, y0 + 467, 26, '#DCE7FF', 'middle') +
+      '</svg>';
+  } catch (err) {
+    console.error('Poster text rendering failed:', err);
+    return NextResponse.json({ error: 'Poster text rendering failed.' }, { status: 500 });
+  }
 
   const composed = sharp({
     create: { width: width, height: height, channels: 4, background: { r: 22, g: 35, b: 61, alpha: 1 } },

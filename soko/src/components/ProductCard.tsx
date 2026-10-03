@@ -224,6 +224,19 @@ export default function ProductCard({ product }: ProductCardProps) {
             {distance ? `Contact seller · ${distance} away` : 'Contact seller'}
           </button>
         )}
+
+        <a
+          href={`/api/products/${product.id}/poster`}
+          download={`soko-${product.name.replace(/\s+/g, '-').toLowerCase()}.png`}
+          className="mt-2 w-full flex items-center justify-center gap-2 text-xs font-semibold text-night/60 border border-night/15 hover:bg-night/5 transition py-2 rounded-xl"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <path d="M7 10l5 5 5-5" />
+            <path d="M12 15V3" />
+          </svg>
+          Download promo image
+        </a>
       </div>
 
       {/* Contact Seller Modal */}

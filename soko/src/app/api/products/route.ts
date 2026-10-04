@@ -70,7 +70,7 @@ export async function GET(req: Request) {
     category: { select: { name: true, slug: true } },
   };
 
-  let products;
+  let products: any[] = [];
   if (mine) {
     products = await prisma.product.findMany({
       where,
@@ -81,13 +81,13 @@ export async function GET(req: Request) {
   } else {
     // Public marketplace: actively boosted products first (capped), then the rest by newest.
     const now = new Date();
-    const boosted = await prisma.product.findMany({
+    const boosted: any[] = await prisma.product.findMany({
       where: { AND: [where, { boostedUntil: { gt: now } }] },
       orderBy: { createdAt: 'desc' },
       include,
       take: MAX_BOOSTED,
     });
-    const rest = await prisma.product.findMany({
+    const rest: any[] = await prisma.product.findMany({
       where: {
         AND: [where, { OR: [{ boostedUntil: null }, { boostedUntil: { lte: now } }] }],
       },
@@ -99,10 +99,10 @@ export async function GET(req: Request) {
   }
 
   // Compute review average/count per business in ONE query, instead of
-  // sending every individual review rating for every product (was causing
-  // huge duplicated egress: N products from the same business each carried
-  // that business's full review list).
-  const businessIds = [...new Set(products.map((p) => p.businessId))];
+  // sending every individual review rating for every product.
+  const businessIds: string[] = Array.from(
+    new Set<string>(products.map((p: any) => p.businessId as string))
+  );
   const reviewStats = businessIds.length
     ? await prisma.review.groupBy({
         by: ['businessId'],
@@ -115,7 +115,7 @@ export async function GET(req: Request) {
     reviewStats.map((r) => [r.businessId, { avgRating: r._avg.rating || 0, reviewCount: r._count.rating }])
   );
 
-  const productsWithStats = products.map((p) => ({
+  const productsWithStats = products.map((p: any) => ({
     ...p,
     business: p.business
       ? {

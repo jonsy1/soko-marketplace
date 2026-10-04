@@ -17,8 +17,8 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           <Link href="/dashboard/business/analytics" className="py-4 hover:text-teal-600 whitespace-nowrap">
             Analytics
           </Link>
-          <Link href="/dashboard/business/billing" className="py-4 hover:text-teal-600 whitespace-nowrap">
-            Billing
+          <Link href="/dashboard/business/billing" className="py-4 font-semibold text-clay-500 hover:text-clay-600 whitespace-nowrap">
+            Promote
           </Link>
           <Link href="/dashboard/business/settings" className="py-4 hover:text-teal-600 whitespace-nowrap">
             Store settings

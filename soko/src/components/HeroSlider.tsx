@@ -3,6 +3,30 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
+// Shown when no seller has an active Featured promotion.
+const DEMO_SLIDES: any[] = [
+  {
+    id: 'demo-welcome',
+    kind: 'info',
+    title: 'Welcome to Soko',
+    subtitle: 'Discover products from Tanzanian sellers',
+    badge: 'Soko',
+    ctaText: 'Browse categories',
+    ctaLink: '/categories',
+    bg: 'from-clay-600 via-clay-500 to-clay-400',
+  },
+  {
+    id: 'demo-sell',
+    kind: 'ad',
+    title: 'Your product could be here',
+    subtitle: 'Feature a product and it appears on this banner for every visitor.',
+    badge: 'For sellers',
+    ctaText: 'Promote your product',
+    ctaLink: '/dashboard/business/billing',
+    bg: 'from-night via-market-600 to-market-500',
+  },
+];
+
 export default function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -10,44 +34,39 @@ export default function HeroSlider() {
   const [loading, setLoading] = useState(true);
   const slideIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch products for hero slides
+  // Fetch only products with an active Featured promotion
   useEffect(() => {
-    fetch('/api/products?take=5')
+    fetch('/api/products?hero=1')
       .then((r) => r.json())
       .then((data) => {
         const products = Array.isArray(data) ? data : [];
-        const heroSlides = products.map((product: any) => ({
-          id: product.id,
-          title: product.name,
-          subtitle: `From ${product.business?.name || 'Soko Seller'}`,
-          image: product.imageUrl || '/images/placeholder.jpg',
-          ctaText: 'View Product',
-          ctaLink: `/product/${product.id}`,
-          badge: product.category?.name || 'Featured',
-          price: product.price,
-        }));
-        setSlides(heroSlides);
+        if (products.length === 0) {
+          setSlides(DEMO_SLIDES);
+        } else {
+          const heroSlides = products.map((product: any) => ({
+            id: product.id,
+            kind: 'product',
+            title: product.name,
+            subtitle: `From ${product.business?.name || 'Soko Seller'}`,
+            image: product.imageUrl,
+            ctaText: 'View Product',
+            ctaLink: `/product/${product.id}`,
+            badge: product.category?.name || 'Featured',
+            price: product.price,
+          }));
+          setSlides(heroSlides);
+        }
         setLoading(false);
       })
       .catch(() => {
-        setSlides([
-          {
-            id: '1',
-            title: 'Welcome to Soko',
-            subtitle: 'Discover amazing products',
-            image: '/images/hero/fallback-1.jpg',
-            ctaText: 'Shop Now',
-            ctaLink: '/',
-            badge: 'Featured',
-          },
-        ]);
+        setSlides(DEMO_SLIDES);
         setLoading(false);
       });
   }, []);
 
   // Auto play
   useEffect(() => {
-    if (isAutoPlaying && slides.length > 0) {
+    if (isAutoPlaying && slides.length > 1) {
       slideIntervalRef.current = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
       }, 5000);
@@ -80,21 +99,7 @@ export default function HeroSlider() {
   if (loading) {
     return (
       <div className="relative overflow-hidden rounded-2xl h-[220px] md:h-[280px] bg-clay-50 animate-pulse flex items-center justify-center">
-        <p className="text-clay-600/50">Loading products...</p>
-      </div>
-    );
-  }
-
-  if (slides.length === 0) {
-    return (
-      <div className="relative overflow-hidden rounded-2xl h-[220px] md:h-[280px] bg-gradient-to-r from-clay-600 via-clay-500 to-clay-400 flex items-center justify-center text-white">
-        <div className="text-center px-4">
-          <h2 className="text-xl md:text-2xl font-bold">Welcome to Soko</h2>
-          <p className="text-white/80 mt-1 text-sm">Discover amazing products from Tanzanian sellers</p>
-          <Link href="/" className="inline-block mt-3 px-5 py-2.5 bg-market-500 text-white rounded-xl font-semibold text-sm hover:bg-market-600 transition">
-            Start Shopping
-          </Link>
-        </div>
+        <p className="text-clay-600/50">Loading...</p>
       </div>
     );
   }
@@ -110,19 +115,23 @@ export default function HeroSlider() {
           <div
             key={slide.id}
             className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-              index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+              index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
             }`}
           >
-            {/* Product Image as Background */}
-            {slide.image && (
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${slide.image})` }}
-              />
+            {/* Product slides: photo + orange overlay. Demo slides: plain gradient. */}
+            {slide.kind === 'product' ? (
+              <>
+                {slide.image && (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${slide.image})` }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-clay-600/90 via-clay-500/75 to-clay-400/40" />
+              </>
+            ) : (
+              <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg}`} />
             )}
-
-            {/* Orange gradient overlay - kama pichani */}
-            <div className="absolute inset-0 bg-gradient-to-r from-clay-600/90 via-clay-500/75 to-clay-400/40" />
 
             {/* Content */}
             <div className="relative h-full flex items-center">
@@ -142,13 +151,19 @@ export default function HeroSlider() {
                     {slide.subtitle}
                   </p>
 
-                  <p className="text-white text-lg md:text-xl font-semibold mt-1">
-                    TZS {Number(slide.price).toLocaleString()}
-                  </p>
+                  {slide.price !== undefined && slide.price !== null && (
+                    <p className="text-white text-lg md:text-xl font-semibold mt-1">
+                      TZS {Number(slide.price).toLocaleString()}
+                    </p>
+                  )}
 
                   <Link
                     href={slide.ctaLink}
-                    className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-market-500 text-white text-sm font-semibold rounded-xl hover:bg-market-600 transition-all hover:scale-[1.02] shadow-lg"
+                    className={`inline-flex items-center gap-2 mt-3 px-4 py-2 text-white text-sm font-semibold rounded-xl transition-all hover:scale-[1.02] shadow-lg ${
+                      slide.kind === 'ad'
+                        ? 'bg-clay-500 hover:bg-clay-600'
+                        : 'bg-market-500 hover:bg-market-600'
+                    }`}
                   >
                     {slide.ctaText}
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

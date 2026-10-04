@@ -11,7 +11,8 @@ const PROMOTIONS = [
     name: 'Boost',
     price: 'TZS 2,000',
     duration: 'for 3 days',
-    description: 'Get one product seen by more buyers on the marketplace.',
+    description:
+      'Your product is shown near the top of the marketplace. Boosted products take turns, so each one gets its share of top spots.',
     waName: 'Boost (TZS 2,000 for 3 days)',
   },
   {
@@ -19,7 +20,8 @@ const PROMOTIONS = [
     name: 'Featured',
     price: 'TZS 10,000',
     duration: 'for 7 days',
-    description: 'Feature one product in its category for a full week.',
+    description:
+      'Your product can appear on the big banner at the top of the homepage. Banner spots are limited, so featured products take turns.',
     waName: 'Featured (TZS 10,000 for 7 days)',
   },
 ];

@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 const MAX_BOOSTED = 8;
 const BOOST_POOL = 40;
 const PAGE_SIZE = 60;
+const HERO_SLIDES = 5;
+const HERO_POOL = 30;
 
 function shuffle<T>(items: T[]): T[] {
   const a = items.slice();
@@ -19,6 +21,31 @@ function shuffle<T>(items: T[]): T[] {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+
+  // Hero banner: only products with an active Featured promotion and a photo.
+  if (searchParams.get('hero')) {
+    const now = new Date();
+    const heroPool: any[] = await prisma.product.findMany({
+      where: {
+        active: true,
+        imageUrl: { not: null },
+        featuredUntil: { gt: now },
+        business: { status: 'VERIFIED', isOpen: true },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        imageUrl: true,
+        business: { select: { name: true } },
+        category: { select: { name: true } },
+      },
+      take: HERO_POOL,
+    });
+    return NextResponse.json(shuffle(heroPool).slice(0, HERO_SLIDES));
+  }
+
   const q = searchParams.get('q')?.trim();
   const category = searchParams.get('category');
   const businessId = searchParams.get('businessId');

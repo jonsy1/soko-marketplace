@@ -3,7 +3,19 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
 const MAX_BOOSTED = 8;
+const BOOST_POOL = 40;
 const PAGE_SIZE = 60;
+
+function shuffle<T>(items: T[]): T[] {
+  const a = items.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -79,18 +91,21 @@ export async function GET(req: Request) {
       take: PAGE_SIZE,
     });
   } else {
-    // Public marketplace: actively boosted products first (capped), then the rest by newest.
+    // Public marketplace: a rotating selection of actively boosted products first,
+    // then everything else by newest. Boosted products that are not selected in this
+    // request still appear in the normal list, so none disappear.
     const now = new Date();
-    const boosted: any[] = await prisma.product.findMany({
+    const boostedPool: any[] = await prisma.product.findMany({
       where: { AND: [where, { boostedUntil: { gt: now } }] },
       orderBy: { createdAt: 'desc' },
       include,
-      take: MAX_BOOSTED,
+      take: BOOST_POOL,
     });
+    const boosted: any[] = shuffle(boostedPool).slice(0, MAX_BOOSTED);
+    const boostedIds: string[] = boosted.map((p: any) => p.id as string);
+
     const rest: any[] = await prisma.product.findMany({
-      where: {
-        AND: [where, { OR: [{ boostedUntil: null }, { boostedUntil: { lte: now } }] }],
-      },
+      where: { AND: [where, { id: { notIn: boostedIds } }] },
       orderBy: { createdAt: 'desc' },
       include,
       take: PAGE_SIZE - boosted.length,

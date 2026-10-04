@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
 import { useCart } from '@/components/CartContext';
 import LocateShop from '@/components/LocateShop';
-import { getDisplayOriginalPrice, DISCOUNT_RATE, getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
+import { getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -204,11 +204,7 @@ export default function ProductPage() {
               <span className="badge bg-clay-50 text-clay-600">-{product.discountPercent}% OFF</span>
             </>
           ) : (
-            <>
-              <span className="text-clay-500 font-bold text-2xl">{formatTZS(product.price)}</span>
-              <span className="text-night/40 text-base line-through">{formatTZS(getDisplayOriginalPrice(product.price))}</span>
-              <span className="badge bg-clay-50 text-clay-600">-{DISCOUNT_RATE * 100}% OFF</span>
-            </>
+            <span className="text-clay-500 font-bold text-2xl">{formatTZS(product.price)}</span>
           )}
         </div>
         {product.category && (

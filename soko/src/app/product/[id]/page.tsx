@@ -64,6 +64,23 @@ export default function ProductPage() {
     router.push('/checkout');
   };
 
+  const handleShare = async () => {
+    if (!product) return;
+    const link = window.location.origin + '/product/' + product.id;
+    const text =
+      'Angalia ' + product.name + ' - TZS ' + Number(product.price).toLocaleString('en-US') + ' kwenye Soko: ' + link;
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share({ title: product.name, text: text, url: link });
+        return;
+      }
+    } catch {
+      // user closed the share sheet, or sharing failed: fall back below only if it was an error
+      return;
+    }
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -220,6 +237,20 @@ export default function ProductPage() {
               Buy Now →
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="mt-3 w-full px-6 py-3 rounded-xl font-semibold border border-night/15 text-night/70 hover:bg-night/5 transition flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+            </svg>
+            Share
+          </button>
 
           <button onClick={() => router.back()} className="mt-6 text-sm text-night/40 hover:text-night/70 transition">
             ← Back

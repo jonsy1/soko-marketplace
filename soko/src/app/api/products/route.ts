@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
+const MAX_BOOSTED = 8;
+const PAGE_SIZE = 60;
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q')?.trim();
@@ -47,30 +50,53 @@ export async function GET(req: Request) {
     where.business = { location: { contains: location } };
   }
 
-  const products = await prisma.product.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      business: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          location: true,
-          status: true,
-          offersDelivery: true,
-          latitude: true,
-          longitude: true,
-          phone: true,
-          logoUrl: true,
-          description: true,
-          isOpen: true,
-        },
+  const include = {
+    business: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        location: true,
+        status: true,
+        offersDelivery: true,
+        latitude: true,
+        longitude: true,
+        phone: true,
+        logoUrl: true,
+        description: true,
+        isOpen: true,
       },
-      category: { select: { name: true, slug: true } },
     },
-    take: 60,
-  });
+    category: { select: { name: true, slug: true } },
+  };
+
+  let products;
+  if (mine) {
+    products = await prisma.product.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include,
+      take: PAGE_SIZE,
+    });
+  } else {
+    // Public marketplace: actively boosted products first (capped), then the rest by newest.
+    const now = new Date();
+    const boosted = await prisma.product.findMany({
+      where: { AND: [where, { boostedUntil: { gt: now } }] },
+      orderBy: { createdAt: 'desc' },
+      include,
+      take: MAX_BOOSTED,
+    });
+    const rest = await prisma.product.findMany({
+      where: {
+        AND: [where, { OR: [{ boostedUntil: null }, { boostedUntil: { lte: now } }] }],
+      },
+      orderBy: { createdAt: 'desc' },
+      include,
+      take: PAGE_SIZE - boosted.length,
+    });
+    products = [...boosted, ...rest];
+  }
 
   // Compute review average/count per business in ONE query, instead of
   // sending every individual review rating for every product (was causing

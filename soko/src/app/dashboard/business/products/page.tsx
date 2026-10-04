@@ -144,6 +144,12 @@ export default function ManageProductsPage() {
                 </span>
               )}
               <div className="flex gap-2 flex-wrap">
+                <Link
+                  href={`/dashboard/business/billing?product=${encodeURIComponent(p.name)}`}
+                  className="press-3d btn text-xs bg-clay-500 text-white hover:bg-clay-600"
+                >
+                  ⚡ Promote
+                </Link>
                 <button
                   onClick={() => copyWhatsAppReply(p)}
                   className={`press-3d btn text-xs ${

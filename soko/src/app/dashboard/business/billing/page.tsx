@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 // Soko WhatsApp number in international format, no + and no spaces.
@@ -32,6 +33,18 @@ function buildWhatsAppLink(message: string) {
 }
 
 export default function BillingPage() {
+  const [productName, setProductName] = useState('');
+
+  // Read the product name from the link (?product=...) when coming from My Products.
+  useEffect(() => {
+    try {
+      const name = new URLSearchParams(window.location.search).get('product');
+      if (name) setProductName(name.slice(0, 80));
+    } catch {
+      // ignore
+    }
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="font-display text-2xl font-bold mb-2">Promote your products</h1>
@@ -39,9 +52,16 @@ export default function BillingPage() {
         Pay only when you want more buyers to see a product. No monthly plan, no commitment.
       </p>
 
+      {productName && (
+        <div className="bg-market-50 border border-night/10 rounded-2xl px-4 py-3 mb-6 text-sm text-night">
+          Promoting: <span className="font-semibold">{productName}</span>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-5">
         {PROMOTIONS.map((promo) => {
-          const message = 'Hi Soko, I would like to request ' + promo.waName + ' for one of my products.';
+          const target = productName ? 'my product "' + productName + '"' : 'one of my products';
+          const message = 'Hi Soko, I would like to request ' + promo.waName + ' for ' + target + '.';
           return (
             <div key={promo.key} className="card p-6 flex flex-col">
               <h2 className="font-display text-xl font-bold text-night">{promo.name}</h2>

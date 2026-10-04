@@ -20,6 +20,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/dashboard/admin/email-sellers" className="py-4 hover:text-teal-600 whitespace-nowrap">
             Email Sellers
           </Link>
+          <Link href="/dashboard/admin/promotions" className="py-4 hover:text-teal-600 whitespace-nowrap">
+            Promotions
+          </Link>
         </div>
       </div>
       {children}

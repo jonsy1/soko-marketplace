@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from '@/components/LanguageProvider';
 import { useCart } from '@/components/CartContext';
+import LocateShop from '@/components/LocateShop';
 import { getDisplayOriginalPrice, DISCOUNT_RATE, getEffectivePrice, hasRealDiscount } from '@/lib/pricing';
 
 function formatTZS(n: number) {
@@ -71,6 +72,23 @@ export default function ProductPage() {
     }
   }
 
+  async function handleShare() {
+    if (!product) return;
+    const link = window.location.origin + '/products/' + product.id;
+    const shownPrice = getEffectivePrice(product.price, product.discountPercent);
+    const text = 'Angalia ' + product.name + ' - ' + formatTZS(shownPrice) + ' kwenye Soko: ' + link;
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: product.name, text: text, url: link });
+        return;
+      } catch (err: any) {
+        // The person closed the share sheet: do nothing.
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+
   async function placeOrder() {
     setError('');
     setSuccess('');
@@ -122,58 +140,61 @@ export default function ProductPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-10">
-      <div
-        className="aspect-square bg-market-100 rounded-card overflow-hidden relative flex items-center justify-center"
-        style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
-      >
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority
-            draggable={false}
-            className="object-cover pointer-events-none"
-          />
-        ) : (
-          <span className="text-market-600 font-display text-6xl font-bold opacity-40 pointer-events-none">
-            {product.name?.[0]?.toUpperCase()}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleWishlist();
-          }}
-          disabled={wishlistBusy}
-          aria-label="Save to wishlist"
-          style={{ touchAction: 'manipulation' }}
-          className={`absolute top-3 right-3 z-10 w-11 h-11 rounded-full flex items-center justify-center shadow-md transition ${
-            inWishlist ? 'bg-clay-500 text-white' : 'bg-white/90 text-night/50 hover:text-clay-500'
-          }`}
+      <div>
+        <div
+          className="aspect-square bg-market-100 rounded-card overflow-hidden relative flex items-center justify-center"
+          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
-          </svg>
-        </button>
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+              draggable={false}
+              className="object-cover pointer-events-none"
+            />
+          ) : (
+            <span className="text-market-600 font-display text-6xl font-bold opacity-40 pointer-events-none">
+              {product.name?.[0]?.toUpperCase()}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleWishlist();
+            }}
+            disabled={wishlistBusy}
+            aria-label="Save to wishlist"
+            style={{ touchAction: 'manipulation' }}
+            className={`absolute top-3 right-3 z-10 w-11 h-11 rounded-full flex items-center justify-center shadow-md transition ${
+              inWishlist ? 'bg-clay-500 text-white' : 'bg-white/90 text-night/50 hover:text-clay-500'
+            }`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
+            </svg>
+          </button>
+        </div>
+
+        {product.business && (
+          <LocateShop
+            businessId={product.business.id}
+            businessName={product.business.name}
+            latitude={product.business.latitude || null}
+            longitude={product.business.longitude || null}
+            location={product.business.location}
+          />
+        )}
       </div>
 
       <div>
         <Link href={`/business/${product.business.slug}`} className="text-sm text-teal-600 font-semibold">
           {product.business.name} · {product.business.location}
         </Link>
-        {product.business.latitude && product.business.longitude && (
-          <Link
-            href={`https://www.google.com/maps/dir/?api=1&destination=${product.business.latitude},${product.business.longitude}`}
-            target="_blank"
-            className="ml-3 inline-flex items-center gap-1 text-sm font-semibold border border-teal-500/40 text-teal-600 rounded-full px-3 py-1 hover:bg-teal-50 transition"
-          >
-            📍 Locate shop
-          </Link>
-        )}
         <h1 className="font-display text-2xl font-bold mt-2">{product.name}</h1>
         <div className="flex items-center gap-3 mt-2 flex-wrap">
           {hasDiscount ? (
@@ -264,6 +285,20 @@ export default function ProductPage() {
             </>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={handleShare}
+          className="btn w-full border border-night/15 bg-white hover:bg-night/5 mt-3 flex items-center justify-center gap-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+          </svg>
+          Share
+        </button>
       </div>
     </div>
   );

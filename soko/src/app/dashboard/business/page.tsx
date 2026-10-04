@@ -110,6 +110,27 @@ export default function BusinessDashboard() {
         </select>
       </div>
 
+      {/* Promote banner */}
+      <Link
+        href="/dashboard/business/billing"
+        className="flex items-center gap-3 bg-clay-50 border border-clay-500/20 rounded-2xl p-4 mt-5 hover:bg-clay-50/70 transition"
+      >
+        <div className="w-10 h-10 rounded-full bg-clay-500 text-white flex items-center justify-center shrink-0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-night text-sm">Get more buyers for your products</p>
+          <p className="text-night/60 text-xs">
+            Boost a product near the top of the marketplace from TZS 2,000, or feature it on the homepage banner.
+          </p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </Link>
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
         <div className="card p-4">

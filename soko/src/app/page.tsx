@@ -25,11 +25,13 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
-  const [q, setQ] = useState(searchParams.get('q') || '');
+
+  // Search and category come straight from the URL, so they update
+  // every time the address changes (Navbar search, category buttons, back button).
+  const q = searchParams.get('q') || '';
+  const activeCategory = searchParams.get('category');
+
   const [categories, setCategories] = useState<any[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string | null>(
-    searchParams.get('category')
-  );
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -57,30 +59,15 @@ function HomeContent() {
         .then((data) => {
           setProducts(Array.isArray(data) ? data : []);
         })
+        .catch(() => setProducts([]))
         .finally(() => setLoading(false));
     }, 300);
 
     return () => clearTimeout(timer);
   }, [q, activeCategory]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (q.trim()) {
-      router.push(`/?q=${encodeURIComponent(q.trim())}`);
-    }
-  };
-
   const handleCategoryClick = (slug: string) => {
-    setActiveCategory(slug);
     router.push(`/?category=${slug}`);
-  };
-
-  const handleShopNow = () => {
-    if (q.trim()) {
-      router.push(`/?q=${encodeURIComponent(q.trim())}`);
-    } else {
-      document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   if (!isMounted) {
@@ -142,10 +129,7 @@ function HomeContent() {
         {/* Category filters - scrollable */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-hide">
           <button
-            onClick={() => {
-              setActiveCategory(null);
-              router.push('/');
-            }}
+            onClick={() => router.push('/')}
             className={`rounded-full text-xs px-5 py-2 whitespace-nowrap transition ${
               !activeCategory
                 ? 'bg-night text-market-50'

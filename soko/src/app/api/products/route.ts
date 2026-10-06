@@ -65,8 +65,8 @@ export async function GET(req: Request) {
   }
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { description: { contains: q } },
+      { name: { contains: q, mode: 'insensitive' } },
+      { description: { contains: q, mode: 'insensitive' } },
     ];
   }
   if (category) {
@@ -84,9 +84,9 @@ export async function GET(req: Request) {
   if (businessId) where.businessId = businessId;
   if (!mine) {
     where.business = { status: 'VERIFIED', isOpen: true };
-    if (location) where.business.location = { contains: location };
+    if (location) where.business.location = { contains: location, mode: 'insensitive' };
   } else if (location) {
-    where.business = { location: { contains: location } };
+    where.business = { location: { contains: location, mode: 'insensitive' } };
   }
 
   const include = {

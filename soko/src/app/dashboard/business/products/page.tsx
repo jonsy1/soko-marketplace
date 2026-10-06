@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getDisplayOriginalPrice, DISCOUNT_RATE } from '@/lib/pricing';
+import { hasRealDiscount } from '@/lib/pricing';
 
 function formatTZS(n: number) {
   return 'TZS ' + Math.round(n).toLocaleString('en-US');
@@ -93,7 +93,7 @@ export default function ManageProductsPage() {
       </div>
 
       <div className="bg-teal-50 text-teal-600 text-sm rounded-card px-4 py-3 mb-6">
-        🎉 Kila bidhaa inaonekana kwa mnunuzi ikiwa na alama ya punguzo la <strong>{DISCOUNT_RATE * 100}%</strong>. Bei uliyoweka ndiyo hasa fedha utakayopokea — <strong>haijakatwa kabisa</strong>. Mfumo unaonyesha tu bei ya juu ya kubuni ikiwa imepigwa mstari, ili kuvutia mnunuzi.
+        Bei uliyoweka ndiyo bei ambayo mnunuzi anaiona. Ukitaka kuvutia wateja, weka punguzo lako mwenyewe: bonyeza <strong>Edit</strong> kwenye bidhaa, kisha uandike asilimia ya punguzo.
       </div>
 
       {loading ? (
@@ -130,7 +130,13 @@ export default function ManageProductsPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">{p.name}</p>
                 <p className="text-sm text-night/50">
-                  Bei yako (halisi): <span className="text-teal-600 font-semibold">{formatTZS(p.price)}</span> · Mnunuzi anaona ikiwa "ilikuwa" {formatTZS(getDisplayOriginalPrice(p.price))} · {p.quantity} in stock
+                  Bei: <span className="text-teal-600 font-semibold">{formatTZS(p.price)}</span> ·{' '}
+                  {hasRealDiscount(p.discountPercent) ? (
+                    <span className="text-clay-600 font-semibold">Punguzo: -{p.discountPercent}%</span>
+                  ) : (
+                    <span>Hakuna punguzo</span>
+                  )}{' '}
+                  · {p.quantity} in stock
                 </p>
               </div>
               <span

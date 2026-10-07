@@ -123,7 +123,7 @@ export default function HeroSlider() {
                 {slide.image && (
                   <div
                     className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${slide.image})` }}
+                    style={{ backgroundImage: `url("${slide.image}")` }}
                   />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-r from-clay-600/90 via-clay-500/75 to-clay-400/40" />

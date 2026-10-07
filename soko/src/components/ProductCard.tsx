@@ -50,6 +50,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const discounted = hasRealDiscount(product.discountPercent);
   const effectivePrice = getEffectivePrice(product.price, product.discountPercent);
 
+  const posterFileName =
+    'soko-' + product.name.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() + '.png';
+
   // Calculate distance using the shared location (fetched once for the whole app)
   useEffect(() => {
     if (!userLocation || !product.business?.latitude || !product.business?.longitude) return;
@@ -175,7 +178,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        {/* Price */}
+        {/* Price + small action buttons */}
         <div className="flex items-center justify-between mt-1.5">
           <div>
             <p className="font-bold text-clay-500 text-base leading-tight">
@@ -188,28 +191,45 @@ export default function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Add to Cart button */}
-          <button
-            onClick={handleAddToCart}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${
-              isAdded
-                ? 'bg-green-500 text-white'
-                : 'bg-night text-white hover:bg-market-500'
-            }`}
-            aria-label="Add to cart"
-          >
-            {isAdded ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <path d="M20 6L9 17l-5-5" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Promo image download: small icon button (real <a> because of the download attribute) */}
+            <a
+              href={`/api/products/${product.id}/poster`}
+              download={posterFileName}
+              title="Promo image"
+              aria-label="Download promo image"
+              className="w-8 h-8 rounded-full flex items-center justify-center border border-market-500/30 text-market-500 bg-market-50 hover:bg-market-500 hover:text-white transition-all"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <circle cx="9" cy="9" r="1.5" />
+                <path d="M21 15l-4.5-4.5L8 19" />
               </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="9" cy="20" r="1.4" />
-                <circle cx="17" cy="20" r="1.4" />
-                <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
-              </svg>
-            )}
-          </button>
+            </a>
+
+            {/* Add to Cart button */}
+            <button
+              onClick={handleAddToCart}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                isAdded
+                  ? 'bg-green-500 text-white'
+                  : 'bg-night text-white hover:bg-market-500'
+              }`}
+              aria-label="Add to cart"
+            >
+              {isAdded ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="20" r="1.4" />
+                  <circle cx="17" cy="20" r="1.4" />
+                  <path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Contact Seller */}
@@ -224,19 +244,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             {distance ? `Contact seller · ${distance} away` : 'Contact seller'}
           </button>
         )}
-
-        <a
-          href={`/api/products/${product.id}/poster`}
-          download={`soko-${product.name.replace(/\s+/g, '-').toLowerCase()}.png`}
-          className="mt-2 w-full flex items-center justify-center gap-2 text-xs font-semibold text-night/60 border border-night/15 hover:bg-night/5 transition py-2 rounded-xl"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <path d="M7 10l5 5 5-5" />
-            <path d="M12 15V3" />
-          </svg>
-          Download promo image
-        </a>
       </div>
 
       {/* Contact Seller Modal */}

@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { getEffectivePrice } from '@/lib/pricing';
+import { sendEmail, priceDropEmailForCustomer } from '@/lib/email';
+
+const MAX_PRICE_ALERTS = 20;
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const product = await prisma.product.findUnique({
@@ -80,6 +84,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     discountValue = d === 0 ? null : d;
   }
 
+  const oldFinalPrice: number = getEffectivePrice(existing.price, existing.discountPercent);
+
   const product = await prisma.product.update({
     where: { id: params.id },
     data: {
@@ -93,6 +99,42 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       discountPercent: discountValue,
     },
   });
+
+  // Price drop alerts for buyers who saved this product. Never blocks saving.
+  try {
+    const newFinalPrice: number = getEffectivePrice(product.price, product.discountPercent);
+    if (newFinalPrice < oldFinalPrice) {
+      const watchers: any[] = await prisma.wishlist.findMany({
+        where: { productId: product.id, priceAtSave: { gt: newFinalPrice } },
+        select: { id: true, priceAtSave: true, user: { select: { email: true } } },
+        take: MAX_PRICE_ALERTS,
+      });
+
+      const productUrl = new URL(req.url).origin + '/products/' + product.id;
+      const alertedIds: string[] = [];
+
+      for (const w of watchers) {
+        if (!w.user || !w.user.email) continue;
+        const mail = priceDropEmailForCustomer({
+          productName: product.name,
+          oldPrice: w.priceAtSave,
+          newPrice: newFinalPrice,
+          productUrl: productUrl,
+        });
+        await sendEmail(w.user.email, mail.subject, mail.html);
+        alertedIds.push(w.id as string);
+      }
+
+      if (alertedIds.length > 0) {
+        await prisma.wishlist.updateMany({
+          where: { id: { in: alertedIds } },
+          data: { priceAtSave: newFinalPrice },
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Price drop alerts failed:', err);
+  }
 
   return NextResponse.json(product);
 }

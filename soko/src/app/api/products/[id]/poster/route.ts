@@ -109,30 +109,40 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
   const productNameSafe = truncate(product.name, 34);
-  const shopNameSafe = truncate(product.business.name, 28);
-  const locationSafe = product.business.location ? truncate(product.business.location, 40) : '';
+  const shopNameSafe = truncate(product.business.name, 26);
+  const locationSafe = product.business.location ? truncate(product.business.location, 36) : '';
   const phoneSafe = product.business.phone ? truncate(product.business.phone, 20) : '';
   const shopLink = 'sokotz.com/business/' + product.business.slug;
 
-  // QR code pointing to the shop page. If generation fails, the poster still works without it.
-  const qrSize = 170;
-  const qrLeft = width - 56 - qrSize;
+  // QR code card (white, rounded) on the right side of the info panel.
+  const qrSize = 160;
+  const cardW = 200;
+  const cardH = 212;
+  const cardLeft = width - 56 - cardW;
+  const y0 = photoHeight;
+  const cardTop = y0 + 182;
   let qrBuffer: Buffer | null = null;
   try {
     qrBuffer = await QRCode.toBuffer('https://www.sokotz.com/business/' + product.business.slug, {
       type: 'png',
       width: qrSize,
-      margin: 2,
+      margin: 1,
       errorCorrectionLevel: 'M',
     });
   } catch {
     qrBuffer = null;
   }
 
-  const y0 = photoHeight;
+  // Logo pill sized to the word, so it never leaves empty space.
+  const logoSize = 36;
+  const sokoWidth = measureText(bold, 'SOKO', logoSize).width;
+  const dotWidth = measureText(bold, '.', logoSize).width;
+  const pillPad = 28;
+  const pillW = Math.round(sokoWidth + dotWidth + pillPad * 2);
+  const pillH = 68;
 
-  // Logo: "SOKO" in dark, "." in blue
-  const sokoWidth = measureText(bold, 'SOKO', 32).width;
+  const priceText = formatTZS(price);
+  const priceWidth = measureText(bold, priceText, 56).width;
 
   let overlaySvg = '';
   try {
@@ -144,34 +154,58 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       '</linearGradient>' +
       '<linearGradient id="fade" x1="0%" y1="0%" x2="0%" y2="100%">' +
       '<stop offset="0%" stop-color="#000000" stop-opacity="0"/>' +
-      '<stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>' +
+      '<stop offset="100%" stop-color="#000000" stop-opacity="0.5"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="panel" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="#1B2D4F"/>' +
+      '<stop offset="100%" stop-color="#101B33"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="#F0602E"/>' +
+      '<stop offset="100%" stop-color="#FF9A5C"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="cta" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#F0602E"/>' +
+      '<stop offset="100%" stop-color="#FF7A45"/>' +
       '</linearGradient>' +
       '</defs>' +
       (!photoBuffer ? '<rect width="' + width + '" height="' + photoHeight + '" fill="url(#bg)"/>' : '') +
-      '<rect x="40" y="40" width="190" height="64" rx="32" fill="#FFFFFF"/>' +
-      textPath(bold, 'SOKO', 68, 83, 32, '#16233D') +
-      textPath(bold, '.', 68 + sokoWidth, 83, 32, '#2F6FED') +
+      // Soft fade at the bottom of the photo
+      '<rect x="0" y="' + (photoHeight - 200) + '" width="' + width + '" height="200" fill="url(#fade)"/>' +
+      // Logo pill
+      '<rect x="40" y="40" width="' + pillW + '" height="' + pillH + '" rx="' + (pillH / 2) + '" fill="#FFFFFF"/>' +
+      textPath(bold, 'SOKO', 40 + pillPad, 40 + 47, logoSize, '#16233D') +
+      textPath(bold, '.', 40 + pillPad + sokoWidth, 40 + 47, logoSize, '#F0602E') +
+      // Discount badge
       (discounted
-        ? '<rect x="' + (width - 180) + '" y="40" width="140" height="64" rx="32" fill="#F0602E"/>' +
-          textPath(bold, '-' + product.discountPercent + '%', width - 110, 83, 30, '#FFFFFF', 'middle')
+        ? '<rect x="' + (width - 190) + '" y="40" width="150" height="' + pillH + '" rx="' + (pillH / 2) + '" fill="#F0602E"/>' +
+          textPath(bold, '-' + product.discountPercent + '%', width - 115, 40 + 46, 32, '#FFFFFF', 'middle')
         : '') +
-      '<rect x="0" y="' + (photoHeight - 180) + '" width="' + width + '" height="180" fill="url(#fade)"/>' +
-      '<rect x="0" y="' + y0 + '" width="' + width + '" height="' + infoHeight + '" fill="#16233D"/>' +
+      // Info panel with orange signature strip
+      '<rect x="0" y="' + y0 + '" width="' + width + '" height="' + infoHeight + '" fill="url(#panel)"/>' +
+      '<rect x="0" y="' + y0 + '" width="' + width + '" height="8" fill="url(#accent)"/>' +
       // Product name + price
-      textPath(bold, productNameSafe, 56, y0 + 70, 44, '#FFFFFF') +
-      textPath(bold, formatTZS(price), 56, y0 + 135, 56, '#F0602E') +
+      textPath(bold, productNameSafe, 56, y0 + 74, 44, '#FFFFFF') +
+      textPath(bold, priceText, 56, y0 + 138, 56, '#FF7A45') +
+      (discounted
+        ? textPath(regular, formatTZS(product.price), 56 + priceWidth + 24, y0 + 136, 30, '#8FA0BA') +
+          '<rect x="' + (56 + priceWidth + 24) + '" y="' + (y0 + 126) + '" width="' + measureText(regular, formatTZS(product.price), 30).width + '" height="2" fill="#8FA0BA"/>'
+        : '') +
       // Divider
-      '<rect x="56" y="' + (y0 + 165) + '" width="968" height="2" fill="#2B3B5C"/>' +
+      '<rect x="56" y="' + (y0 + 164) + '" width="968" height="2" fill="#2B3B5C"/>' +
       // Shop details
-      textPath(bold, shopNameSafe, 56, y0 + 225, 38, '#FFFFFF') +
-      (locationSafe ? textPath(regular, 'Eneo: ' + locationSafe, 56, y0 + 272, 28, '#9CA9BC') : '') +
-      (phoneSafe ? textPath(bold, 'Simu: ' + phoneSafe, 56, y0 + 326, 34, '#FFFFFF') : '') +
-      // QR caption
-      (qrBuffer ? textPath(regular, 'Skani kuona duka', qrLeft + qrSize / 2, y0 + 370, 20, '#9CA9BC', 'middle') : '') +
-      // Bottom call-to-action bar
-      '<rect x="56" y="' + (y0 + 380) + '" width="968" height="110" rx="24" fill="#2F6FED"/>' +
-      textPath(bold, 'Nunua kwenye sokotz.com', width / 2, y0 + 428, 32, '#FFFFFF', 'middle') +
-      textPath(regular, shopLink, width / 2, y0 + 467, 26, '#DCE7FF', 'middle') +
+      textPath(bold, shopNameSafe, 56, y0 + 232, 38, '#FFFFFF') +
+      (locationSafe ? textPath(regular, 'Eneo: ' + locationSafe, 56, y0 + 280, 28, '#9CA9BC') : '') +
+      (phoneSafe ? textPath(bold, 'Simu: ' + phoneSafe, 56, y0 + 334, 34, '#FFFFFF') : '') +
+      // QR card (caption lives inside the card)
+      (qrBuffer
+        ? '<rect x="' + cardLeft + '" y="' + cardTop + '" width="' + cardW + '" height="' + cardH + '" rx="22" fill="#FFFFFF"/>' +
+          textPath(bold, 'Skani kuagiza', cardLeft + cardW / 2, cardTop + 196, 22, '#16233D', 'middle')
+        : '') +
+      // Orange call-to-action bar
+      '<rect x="56" y="' + (y0 + 414) + '" width="968" height="96" rx="26" fill="url(#cta)"/>' +
+      textPath(bold, 'Nunua kwenye sokotz.com', width / 2, y0 + 457, 34, '#FFFFFF', 'middle') +
+      textPath(regular, shopLink, width / 2, y0 + 492, 24, '#FFE3D6', 'middle') +
       '</svg>';
   } catch (err) {
     console.error('Poster text rendering failed:', err);
@@ -179,13 +213,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
   const composed = sharp({
-    create: { width: width, height: height, channels: 4, background: { r: 22, g: 35, b: 61, alpha: 1 } },
+    create: { width: width, height: height, channels: 4, background: { r: 16, g: 27, b: 51, alpha: 1 } },
   });
 
   const layers: any[] = [];
   if (photoBuffer) layers.push({ input: photoBuffer, top: 0, left: 0 });
   layers.push({ input: Buffer.from(overlaySvg), top: 0, left: 0 });
-  if (qrBuffer) layers.push({ input: qrBuffer, top: y0 + 185, left: qrLeft });
+  if (qrBuffer) layers.push({ input: qrBuffer, top: cardTop + 16, left: cardLeft + (cardW - qrSize) / 2 });
 
   const png = await composed.composite(layers).png().toBuffer();
 
@@ -193,7 +227,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     headers: {
       'Content-Type': 'image/png',
       'Content-Disposition': 'inline; filename="soko-' + product.business.slug + '-' + params.id + '.png"',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'public, max-age=600',
     },
   });
 }

@@ -3,29 +3,28 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-// Shown when no seller has an active Featured promotion.
-const DEMO_SLIDES: any[] = [
-  {
-    id: 'demo-welcome',
-    kind: 'info',
-    title: 'Welcome to Soko',
-    subtitle: 'Discover products from Tanzanian sellers',
-    badge: 'Soko',
-    ctaText: 'Browse categories',
-    ctaLink: '/categories',
-    bg: 'from-clay-600 via-clay-500 to-clay-400',
-  },
-  {
-    id: 'demo-sell',
-    kind: 'ad',
-    title: 'Your product could be here',
-    subtitle: 'Feature a product and it appears on this banner for every visitor.',
-    badge: 'For sellers',
-    ctaText: 'Promote your product',
-    ctaLink: '/dashboard/business/billing',
-    bg: 'from-night via-market-600 to-market-500',
-  },
-];
+const WELCOME_SLIDE: any = {
+  id: 'demo-welcome',
+  kind: 'info',
+  title: 'Welcome to Soko',
+  subtitle: 'Discover products from Tanzanian sellers',
+  badge: 'Soko',
+  ctaText: 'Browse categories',
+  ctaLink: '/categories',
+  bg: 'from-clay-600 via-clay-500 to-clay-400',
+};
+
+// Always shown as the last slide, so sellers keep seeing that the space is for sale.
+const SELLER_AD_SLIDE: any = {
+  id: 'demo-sell',
+  kind: 'ad',
+  title: 'Your product could be here',
+  subtitle: 'Feature a product and it appears on this banner for every visitor.',
+  badge: 'For sellers',
+  ctaText: 'Promote your product',
+  ctaLink: '/dashboard/business/billing',
+  bg: 'from-night via-market-600 to-market-500',
+};
 
 export default function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
@@ -41,7 +40,7 @@ export default function HeroSlider() {
       .then((data) => {
         const products = Array.isArray(data) ? data : [];
         if (products.length === 0) {
-          setSlides(DEMO_SLIDES);
+          setSlides([WELCOME_SLIDE, SELLER_AD_SLIDE]);
         } else {
           const heroSlides = products.map((product: any) => ({
             id: product.id,
@@ -54,12 +53,12 @@ export default function HeroSlider() {
             badge: product.category?.name || 'Featured',
             price: product.price,
           }));
-          setSlides(heroSlides);
+          setSlides([...heroSlides, SELLER_AD_SLIDE]);
         }
         setLoading(false);
       })
       .catch(() => {
-        setSlides(DEMO_SLIDES);
+        setSlides([WELCOME_SLIDE, SELLER_AD_SLIDE]);
         setLoading(false);
       });
   }, []);
@@ -118,7 +117,7 @@ export default function HeroSlider() {
               index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
             }`}
           >
-            {/* Product slides: photo + orange overlay. Demo slides: plain gradient. */}
+            {/* Product slides: photo + orange overlay. Other slides: plain gradient. */}
             {slide.kind === 'product' ? (
               <>
                 {slide.image && (

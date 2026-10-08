@@ -11,6 +11,13 @@ interface PromoProduct {
   business: { name: string } | null;
 }
 
+interface Summary {
+  boostActive: number;
+  boostLimit: number;
+  featuredActive: number;
+  featuredLimit: number;
+}
+
 function isActive(d: string | null) {
   return !!d && new Date(d).getTime() > Date.now();
 }
@@ -24,13 +31,46 @@ function formatDate(d: string) {
   });
 }
 
+function SlotCard({ label, active, limit }: { label: string; active: number; limit: number }) {
+  const full = active >= limit;
+  const left = limit - active;
+  return (
+    <div
+      className={
+        full
+          ? 'rounded-2xl p-4 border border-clay-500/30 bg-clay-50'
+          : 'rounded-2xl p-4 border border-night/10 bg-market-50'
+      }
+    >
+      <p className="text-xs text-night/50 font-medium">{label}</p>
+      <p className="font-display text-2xl font-bold text-night mt-0.5">
+        {active} / {limit}
+      </p>
+      <p className={full ? 'text-xs font-semibold text-clay-600 mt-1' : 'text-xs text-night/60 mt-1'}>
+        {full ? 'Nafasi zimejaa, usipokee malipo mapya' : 'Nafasi ' + left + ' imebaki'}
+      </p>
+    </div>
+  );
+}
+
 export default function AdminPromotionsPage() {
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<PromoProduct[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+
+  async function loadSummary() {
+    try {
+      const res = await fetch('/api/admin/promotions?summary=1');
+      const data = await res.json();
+      if (res.ok) setSummary(data);
+    } catch {
+      // The counters are optional: the page still works without them.
+    }
+  }
 
   async function load(q: string) {
     setLoading(true);
@@ -54,6 +94,7 @@ export default function AdminPromotionsPage() {
 
   useEffect(() => {
     load('');
+    loadSummary();
   }, []);
 
   async function act(productId: string, action: string) {
@@ -71,6 +112,7 @@ export default function AdminPromotionsPage() {
         setError(data.error || 'Something went wrong.');
       } else {
         setProducts((prev) => prev.map((p) => (p.id === productId ? data : p)));
+        loadSummary();
       }
     } catch {
       setError('Could not update the product.');
@@ -84,6 +126,13 @@ export default function AdminPromotionsPage() {
       <p className="text-night/50 text-sm mb-6">
         Activate Boost (3 days) or Featured (7 days) for a product after the seller has paid.
       </p>
+
+      {summary && (
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <SlotCard label="Boost hai" active={summary.boostActive} limit={summary.boostLimit} />
+          <SlotCard label="Featured hai (hero)" active={summary.featuredActive} limit={summary.featuredLimit} />
+        </div>
+      )}
 
       <div className="flex gap-2 mb-6">
         <input

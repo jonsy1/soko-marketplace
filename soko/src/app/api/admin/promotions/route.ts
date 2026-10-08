@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 const BOOST_DAYS = 3;
 const FEATURED_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const BOOST_LIMIT = 20;
+const FEATURED_LIMIT = 5;
 
 const productSelect = {
   id: true,
@@ -27,8 +29,21 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const q = searchParams.get('q')?.trim();
   const now = new Date();
+
+  // Summary mode: how many promotions are active right now.
+  if (searchParams.get('summary')) {
+    const boostActive: number = await prisma.product.count({ where: { boostedUntil: { gt: now } } });
+    const featuredActive: number = await prisma.product.count({ where: { featuredUntil: { gt: now } } });
+    return NextResponse.json({
+      boostActive: boostActive,
+      boostLimit: BOOST_LIMIT,
+      featuredActive: featuredActive,
+      featuredLimit: FEATURED_LIMIT,
+    });
+  }
+
+  const q = searchParams.get('q')?.trim();
 
   const where: any = q
     ? { name: { contains: q, mode: 'insensitive' } }

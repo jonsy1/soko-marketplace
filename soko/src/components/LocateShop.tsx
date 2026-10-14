@@ -10,6 +10,8 @@ interface LocateShopProps {
   location?: string | null;
 }
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
 export default function LocateShop({
   businessId,
   businessName,
@@ -23,6 +25,7 @@ export default function LocateShop({
   const [shopLocation, setShopLocation] = useState<{lat: number; lng: number} | null>(null);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapProvider, setMapProvider] = useState<'mapbox' | 'osm'>(MAPBOX_TOKEN ? 'mapbox' : 'osm');
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletLoaded = useRef(false);
 
@@ -71,12 +74,37 @@ export default function LocateShop({
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
-        const map = L.map(mapRef.current).setView([shopLocation.lat, shopLocation.lng], 14);
+        const map = L.map(mapRef.current as HTMLDivElement).setView([shopLocation.lat, shopLocation.lng], 14);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // OpenStreetMap layer: used when there is no Mapbox token, or as a backup if Mapbox fails.
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap',
           maxZoom: 19,
-        }).addTo(map);
+        });
+
+        if (MAPBOX_TOKEN) {
+          const mapboxLayer = L.tileLayer(
+            'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=' +
+              encodeURIComponent(MAPBOX_TOKEN),
+            {
+              tileSize: 512,
+              zoomOffset: -1,
+              maxZoom: 19,
+              attribution: '© Mapbox © OpenStreetMap',
+            }
+          ).addTo(map);
+
+          let fellBack = false;
+          mapboxLayer.on('tileerror', () => {
+            if (fellBack) return;
+            fellBack = true;
+            map.removeLayer(mapboxLayer);
+            osmLayer.addTo(map);
+            setMapProvider('osm');
+          });
+        } else {
+          osmLayer.addTo(map);
+        }
 
         L.marker([shopLocation.lat, shopLocation.lng])
           .addTo(map)
@@ -203,7 +231,7 @@ export default function LocateShop({
       )}
 
       <p className="text-[10px] text-night/30 mt-1 text-center">
-        Map data © OpenStreetMap
+        {mapProvider === 'mapbox' ? '© Mapbox © OpenStreetMap' : 'Map data © OpenStreetMap'}
       </p>
     </div>
   );

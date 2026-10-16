@@ -12,6 +12,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
 interface Shop {
   id: string;
   name: string;
@@ -32,20 +34,52 @@ export default function NearbyShopsMap({ shops, center, onSelect }: NearbyShopsM
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
-    mapInstance.current = L.map(mapRef.current).setView([center.lat, center.lng], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const map = L.map(mapRef.current).setView([center.lat, center.lng], 14);
+    mapInstance.current = map;
+
+    // OpenStreetMap: used when there is no Mapbox token, or as a backup if Mapbox fails.
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
-    }).addTo(mapInstance.current);
+    });
+
+    if (MAPBOX_TOKEN) {
+      const mapboxLayer = L.tileLayer(
+        'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=' +
+          encodeURIComponent(MAPBOX_TOKEN),
+        {
+          tileSize: 512,
+          zoomOffset: -1,
+          maxZoom: 19,
+          attribution: '&copy; Mapbox &copy; OpenStreetMap',
+        }
+      ).addTo(map);
+
+      let fellBack = false;
+      mapboxLayer.on('tileerror', () => {
+        if (fellBack) return;
+        fellBack = true;
+        map.removeLayer(mapboxLayer);
+        osmLayer.addTo(map);
+      });
+    } else {
+      osmLayer.addTo(map);
+    }
 
     L.circleMarker([center.lat, center.lng], {
       radius: 7,
       color: '#2F6FED',
       fillColor: '#2F6FED',
       fillOpacity: 1,
-    }).addTo(mapInstance.current);
+    }).addTo(map);
+
+    // Recalculate the map size once the page layout has settled (helps with grey blocks).
+    const resizeTimer = setTimeout(() => {
+      map.invalidateSize();
+    }, 300);
 
     return () => {
+      clearTimeout(resizeTimer);
       mapInstance.current?.remove();
       mapInstance.current = null;
     };

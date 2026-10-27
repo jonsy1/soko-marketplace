@@ -49,6 +49,12 @@ enum PaymentStatus {
   CASH_ON_DELIVERY
 }
 
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -66,6 +72,7 @@ model User {
   conversationMessages ConversationMessage[]
   reviews               Review[]
   wishlistItems         Wishlist[]
+  companyListings       CompanyListing[]
 }
 
 model Business {
@@ -262,4 +269,23 @@ model Review {
   customerId String
 
   @@unique([businessId, customerId])
+}
+
+model CompanyListing {
+  id              String        @id @default(cuid())
+  name            String
+  category        String
+  description     String
+  phone           String
+  location        String?
+  website         String?
+  bannerUrl       String?
+  status          ListingStatus @default(PENDING)
+  rejectionReason String?
+  activeUntil     DateTime?
+  createdAt       DateTime      @default(now())
+  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId         String
+
+  @@index([status, activeUntil])
 }

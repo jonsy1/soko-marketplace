@@ -66,6 +66,20 @@ export default function AccountPage() {
             </Link>
           </div>
         )}
+
+        <div className="card p-4">
+          <p className="font-semibold text-night text-sm">Una kampuni au huduma?</p>
+          <p className="text-night/60 text-xs mt-1 mb-3">
+            Itangaze kwenye Soko ili wateja wakupate. Ni fomu fupi tu.
+          </p>
+          <Link href="/services/new" className="btn btn-outline w-full">
+            Tangaza kampuni yako
+          </Link>
+          <Link href="/services" className="block text-center text-xs text-market-500 font-semibold mt-3">
+            Tazama huduma za kampuni
+          </Link>
+        </div>
+
         <Link href="/orders" className="btn btn-outline w-full">
           {t.account.viewOrders}
         </Link>

@@ -23,6 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/dashboard/admin/promotions" className="py-4 hover:text-teal-600 whitespace-nowrap">
             Promotions
           </Link>
+          <Link href="/dashboard/admin/listings" className="py-4 hover:text-teal-600 whitespace-nowrap">
+            Listings
+          </Link>
         </div>
       </div>
       {children}

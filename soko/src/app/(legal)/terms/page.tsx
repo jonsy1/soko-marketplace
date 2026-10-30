@@ -59,7 +59,18 @@ export default function TermsPage() {
           <li>Soko may remove a promotion, without refund, if the product or Seller violates these Terms.</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">6. Reviews and User Content</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">6. Company Listings (Services)</h2>
+        <ul className="list-disc pl-6 text-night/80">
+          <li>Any signed-in user may submit a company listing to advertise a business or service on the Soko Services page. A listing includes the company name, category, description, a WhatsApp phone number, and optionally a location, website or social media link, and a banner image.</li>
+          <li>Every listing is reviewed by Soko before it appears. We may approve, reject, or remove a listing at any time, and we may ask for changes.</li>
+          <li>Approved listings are shown publicly, including the phone number you provide, for the agreed period. When the period ends, the listing stops appearing unless it is renewed.</li>
+          <li>The fee and the display period are agreed with Soko before a listing is approved. A listing is activated after payment is confirmed. Payments for listings are not refundable once the listing has been activated, except where Soko decides otherwise at its discretion.</li>
+          <li>You are responsible for the accuracy of your listing and for holding any licence or permit your service requires. Listings must not be misleading, illegal, offensive, or infringe anyone's rights, including the rights in any image you upload.</li>
+          <li><strong>Soko does not verify, endorse, or guarantee any company or service listed.</strong> Any agreement or payment between a customer and a company is between them, and Soko is not a party to it. Customers should check a company for themselves before paying.</li>
+          <li>Soko may remove a listing, without refund, if it or its owner violates these Terms.</li>
+        </ul>
+
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">7. Reviews and User Content</h2>
         <p className="text-night/80">
           Ratings and reviews reflect the personal opinion of the customer who wrote them, not the views of Soko.
           We do not verify the accuracy of reviews. We may remove any content that violates these Terms, is
@@ -67,87 +78,88 @@ export default function TermsPage() {
           for user-submitted content.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">7. Prohibited Activities</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">8. Prohibited Activities</h2>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Listing illegal, counterfeit, or prohibited items</li>
-          <li>Fraudulent, misleading, or deceptive activity, including fake reviews</li>
+          <li>Listing illegal, counterfeit, or prohibited items or services</li>
+          <li>Fraudulent, misleading, or deceptive activity, including fake reviews and false company listings</li>
           <li>Harassing or abusing other users</li>
-          <li>Misusing contact information (phone number, WhatsApp) obtained through the platform for purposes unrelated to a genuine order</li>
+          <li>Misusing contact information (phone number, WhatsApp) obtained through the platform for purposes unrelated to a genuine order or enquiry</li>
           <li>Attempting to bypass or interfere with our security measures</li>
         </ul>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">8. Location Services</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">9. Location Services</h2>
         <p className="text-night/80">
           Some features (such as showing nearby shops or distance to a seller) ask for your device's location.
           Sharing your location is optional; if you decline, those specific features may not work, but you can
           still use the rest of Soko normally.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">9. Emails and Notifications</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">10. Emails and Notifications</h2>
         <p className="text-night/80">
           Soko sends emails about your orders, and about price drops on products in your wishlist. We may also
-          email Sellers about their shop, products, or promotions. Push notifications are sent only if you
-          have enabled them in your browser or device.
+          email Sellers about their shop, products, or promotions, and email you about the status of a company
+          listing you submitted. Push notifications are sent only if you have enabled them in your browser or device.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">10. Third-Party Services</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">11. Third-Party Services</h2>
         <p className="text-night/80">
-          Soko uses third-party services to operate, including Google Sign-In (for login), OpenStreetMap (for
-          maps), Vercel (hosting and image storage), Neon (database), Resend (sending emails), and WhatsApp (for
-          optional seller contact). These services are governed by their own terms and privacy policies, which we
-          encourage you to review.
+          Soko uses third-party services to operate, including Google Sign-In (for login), OpenStreetMap and
+          Mapbox (for maps), Vercel (hosting and image storage), Neon (database), Resend (sending emails), and
+          WhatsApp (for optional seller and company contact). These services are governed by their own terms and
+          privacy policies, which we encourage you to review.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">11. Intellectual Property</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">12. Intellectual Property</h2>
         <p className="text-night/80">
           Soko's branding, design, and platform code are protected by copyright and other intellectual property
-          laws. Sellers retain ownership of the product photos and descriptions they upload but grant Soko a
-          license to display them on the platform, including in promotional images generated for their products.
+          laws. Sellers and companies retain ownership of the product photos, banners and descriptions they upload
+          but grant Soko a license to display them on the platform, including in promotional images generated for
+          their products.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">12. Disclaimer of Warranties</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">13. Disclaimer of Warranties</h2>
         <p className="text-night/80">
           Soko is provided "as is" and "as available," without warranties of any kind. We do not guarantee that
-          the platform will be uninterrupted, error-free, or that any product listed will meet your expectations.
-          Soko does not inspect, endorse, or guarantee the quality, safety, or legality of any product listed by
-          Sellers.
+          the platform will be uninterrupted, error-free, or that any product or service listed will meet your
+          expectations. Soko does not inspect, endorse, or guarantee the quality, safety, or legality of any
+          product listed by Sellers or any service advertised by companies.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">13. Limitation of Liability</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">14. Limitation of Liability</h2>
         <p className="text-night/80">
           To the maximum extent permitted by law, Soko and its owner(s) shall not be liable for any indirect,
           incidental, or consequential damages, or for any dispute, loss, or damage arising from: (a) transactions
-          between Buyers and Sellers, (b) the quality, safety, or delivery of any product, (c) content posted by
-          users (including reviews), or (d) unavailability or interruption of the platform. Soko facilitates
-          discovery and communication between Buyers and Sellers but is not a party to, and assumes no
-          responsibility for, the underlying transaction.
+          between Buyers and Sellers, or between customers and listed companies, (b) the quality, safety, or
+          delivery of any product or service, (c) content posted by users (including reviews and company
+          listings), or (d) unavailability or interruption of the platform. Soko facilitates discovery and
+          communication but is not a party to, and assumes no responsibility for, the underlying transaction.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">14. Indemnification</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">15. Indemnification</h2>
         <p className="text-night/80">
           You agree to indemnify and hold Soko harmless from any claim or demand arising out of your use of the
           platform, your violation of these Terms, or your violation of any law or the rights of a third party.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">15. Termination</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">16. Termination</h2>
         <p className="text-night/80">
           We reserve the right to suspend or terminate your account for violations of these Terms or for any
           other reason at our discretion.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">16. Governing Law</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">17. Governing Law</h2>
         <p className="text-night/80">
           These Terms are governed by the laws of the United Republic of Tanzania. Any dispute arising from these
           Terms or your use of Soko shall be subject to the jurisdiction of the courts of Tanzania.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">17. Changes to These Terms</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">18. Changes to These Terms</h2>
         <p className="text-night/80">
           We may update these Terms from time to time. We will post the updated version here with a new "Last
           updated" date. Continued use of Soko after changes means you accept the updated Terms.
         </p>
 
-        <h2 className="text-xl font-semibold text-night mt-6 mb-3">18. Contact Us</h2>
+        <h2 className="text-xl font-semibold text-night mt-6 mb-3">19. Contact Us</h2>
         <p className="text-night/80">
           If you have questions about these Terms of Service, please contact us:
         </p>

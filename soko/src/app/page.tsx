@@ -1,3 +1,4 @@
+
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -117,6 +118,29 @@ function HomeContent() {
           <div className="flex-1">
             <p className="font-semibold text-night text-sm">Shops near you</p>
             <p className="text-night/50 text-xs">See nearby shops on the map</p>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </Link>
+      </section>
+
+      {/* COMPANY SERVICES - link to services page */}
+      <section className="max-w-6xl mx-auto px-4 py-4">
+        <Link
+          href="/services"
+          className="flex items-center gap-3 bg-market-50 border border-night/10 rounded-2xl p-4 hover:bg-market-100 transition"
+        >
+          <span className="w-11 h-11 rounded-full bg-clay-500 text-white flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="7" width="18" height="13" rx="2" />
+              <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+              <path d="M3 13h18" />
+            </svg>
+          </span>
+          <div className="flex-1">
+            <p className="font-semibold text-night text-sm">Huduma za kampuni</p>
+            <p className="text-night/50 text-xs">Picha, usafirishaji, ujenzi, uchapishaji na zaidi</p>
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
             <path d="M9 18l6-6-6-6" />

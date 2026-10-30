@@ -22,12 +22,13 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-6 text-night/80">
           <li><strong>Account information:</strong> name, email address, phone number, and password (encrypted).</li>
           <li><strong>Business information (Sellers):</strong> business name, description, phone number, shop location/address, and logo/photos.</li>
+          <li><strong>Company listings:</strong> if you advertise a company or service, the company name, category, description, WhatsApp phone number, optional location, website or social media link, and banner image.</li>
           <li><strong>Location data:</strong> if you grant permission, your device's GPS coordinates, used to show nearby shops and estimated distance. You can decline this without losing access to the rest of Soko.</li>
           <li><strong>Content you provide:</strong> product listings and photos, reviews and ratings, and messages sent through the platform.</li>
           <li><strong>Wishlist:</strong> the products you save, and the price at the time you saved them, so we can tell you when a price drops.</li>
           <li><strong>Google account information:</strong> if you sign in with Google, we receive your name, email address, and profile photo from Google.</li>
           <li><strong>Order history:</strong> items ordered, quantities, delivery option, notes, and order status.</li>
-          <li><strong>Promotion records (Sellers):</strong> which products you promoted (Boost or Featured) and for how long.</li>
+          <li><strong>Promotion records:</strong> which products or listings were promoted (Boost, Featured, or a company listing) and for how long.</li>
           <li><strong>Technical data:</strong> login session cookies (to keep you signed in), saved app files for faster loading, and, if enabled, push notification subscription details.</li>
         </ul>
 
@@ -38,6 +39,7 @@ export default function PrivacyPage() {
           <li>To show nearby shops and calculate distance (only if you've shared your location)</li>
           <li>To send order updates by email and, if enabled, push notifications</li>
           <li>To email you when the price of a product on your wishlist drops</li>
+          <li>To review company listings, and to email you when a listing you submitted is approved or rejected</li>
           <li>To send important messages to Sellers about their shop, products, or promotions</li>
           <li>To display reviews and ratings publicly, as described below</li>
           <li>To protect against fraud, abuse, and unauthorized access</li>
@@ -47,8 +49,13 @@ export default function PrivacyPage() {
         <p className="text-night/80">
           To function as a marketplace, some information is visible to anyone browsing Soko, including: a
           Seller's business name, shop location, phone number/WhatsApp (shown to buyers who choose to contact the
-          seller), product listings, and any reviews or ratings left by customers. Please keep this in mind before
-          entering business contact details or writing a review.
+          seller), product listings, and any reviews or ratings left by customers.
+        </p>
+        <p className="text-night/80 mt-3">
+          <strong>Company listings are public.</strong> While an approved listing is active, anyone can see its
+          name, category, description, banner, location, website, and the WhatsApp number you provided. Only
+          submit contact details you are happy to share publicly. When a listing ends or is removed, it stops
+          appearing on Soko. Please keep this in mind before entering business contact details or writing a review.
         </p>
 
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">4. Information Sharing</h2>
@@ -56,7 +63,7 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-6 text-night/80">
           <li>Service providers who help us run Soko: Vercel (hosting and image storage), Neon (database), and Resend (sending emails)</li>
           <li>Google, only for the purpose of Google Sign-In authentication</li>
-          <li>OpenStreetMap, which receives map coordinates to display maps (no personal account information is sent)</li>
+          <li>Map providers (Mapbox and OpenStreetMap). To draw a map, your browser requests map images from them, so they receive the map area you are viewing and your IP address. They do not receive your Soko account details</li>
           <li>Law enforcement, when required by Tanzanian law</li>
           <li>Other users, only where necessary for the marketplace to function (e.g., a Seller sees the name of a customer who ordered from them)</li>
         </ul>
@@ -64,8 +71,9 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">5. Payments</h2>
         <p className="text-night/80">
           Soko does not process payments for orders. Buyers and Sellers agree on payment and delivery between
-          themselves. For paid promotions, payment is arranged directly with us (for example by mobile money), and
-          we keep a record of the promotion, not your mobile money PIN or account details.
+          themselves. For paid promotions and company listings, payment is arranged directly with us (for example
+          by mobile money), and we keep a record of the promotion or listing, not your mobile money PIN or account
+          details.
         </p>
 
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">6. International Data Storage</h2>
@@ -91,7 +99,7 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold text-night mt-6 mb-3">9. Your Rights</h2>
         <p className="text-night/80">Under the PDPA, you have the right to:</p>
         <ul className="list-disc pl-6 text-night/80">
-          <li>Access, correct, or request deletion of your personal information</li>
+          <li>Access, correct, or request deletion of your personal information, including a company listing you submitted</li>
           <li>Withdraw consent (for example, by revoking location access in your device settings, or by deleting your account)</li>
           <li>Request a copy of your data</li>
           <li>Lodge a complaint with the Personal Data Protection Commission (PDPC) of Tanzania if you believe your data has been mishandled</li>

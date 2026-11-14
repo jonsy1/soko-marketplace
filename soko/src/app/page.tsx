@@ -1,4 +1,3 @@
-
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -34,7 +33,10 @@ function HomeContent() {
 
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -50,15 +52,21 @@ function HomeContent() {
 
   useEffect(() => {
     setLoading(true);
+    setNextCursor(null);
+    setTotal(null);
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (activeCategory) params.set('category', activeCategory);
 
     const timer = setTimeout(() => {
       fetch(`/api/products?${params.toString()}`)
-        .then((r) => r.json())
-        .then((data) => {
+        .then(async (r) => {
+          const cursor = r.headers.get('X-Next-Cursor');
+          const totalHeader = r.headers.get('X-Total-Count');
+          const data = await r.json();
           setProducts(Array.isArray(data) ? data : []);
+          setNextCursor(cursor);
+          setTotal(totalHeader ? parseInt(totalHeader, 10) : null);
         })
         .catch(() => setProducts([]))
         .finally(() => setLoading(false));
@@ -66,6 +74,33 @@ function HomeContent() {
 
     return () => clearTimeout(timer);
   }, [q, activeCategory]);
+
+  // "View more": loads the next batch of products and adds it to the list.
+  const loadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (activeCategory) params.set('category', activeCategory);
+      params.set('before', nextCursor);
+
+      const r = await fetch(`/api/products?${params.toString()}`);
+      const cursor = r.headers.get('X-Next-Cursor');
+      const data = await r.json();
+      const more: any[] = Array.isArray(data) ? data : [];
+
+      setProducts((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        return [...prev, ...more.filter((p) => !seen.has(p.id))];
+      });
+      setNextCursor(cursor);
+    } catch {
+      // Keep what is already on screen. The button stays so the person can try again.
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/?category=${slug}`);
@@ -218,7 +253,7 @@ function HomeContent() {
         ) : (
           <>
             <p className="text-sm text-night/50 mb-4">
-              {products.length} products found
+              {total !== null ? total : products.length} products found
               {q && ` for "${q}"`}
               {activeCategory && ` in ${categories.find(c => c.slug === activeCategory)?.name || ''}`}
             </p>
@@ -229,6 +264,19 @@ function HomeContent() {
                 </div>
               ))}
             </div>
+
+            {nextCursor && (
+              <div className="text-center mt-8">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="btn btn-outline px-8 disabled:opacity-60"
+                >
+                  {loadingMore ? 'Loading...' : 'View more'}
+                </button>
+              </div>
+            )}
           </>
         )}
       </section>

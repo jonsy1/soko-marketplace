@@ -52,6 +52,11 @@ export async function GET(req: Request) {
   const location = searchParams.get('location')?.trim();
   const mine = searchParams.get('mine');
 
+  // "View more": the next batch starts after this createdAt value.
+  const beforeRaw = searchParams.get('before');
+  const beforeDate = beforeRaw ? new Date(beforeRaw) : null;
+  const validBefore: Date | null = beforeDate && !isNaN(beforeDate.getTime()) ? beforeDate : null;
+
   const where: any = { active: true };
 
   if (mine) {
@@ -110,6 +115,9 @@ export async function GET(req: Request) {
   };
 
   let products: any[] = [];
+  let nextCursor: string | null = null;
+  let totalCount: number | null = null;
+
   if (mine) {
     products = await prisma.product.findMany({
       where,
@@ -118,26 +126,44 @@ export async function GET(req: Request) {
       take: PAGE_SIZE,
     });
   } else {
-    // Public marketplace: a rotating selection of actively boosted products first,
-    // then everything else by newest. Boosted products that are not selected in this
-    // request still appear in the normal list, so none disappear.
+    // Public marketplace. The first batch starts with a rotating selection of actively
+    // boosted products, then everything else by newest. Later batches ("View more")
+    // continue the newest-first list from where the previous batch ended.
     const now = new Date();
-    const boostedPool: any[] = await prisma.product.findMany({
-      where: { AND: [where, { boostedUntil: { gt: now } }] },
-      orderBy: { createdAt: 'desc' },
-      include,
-      take: BOOST_POOL,
-    });
-    const boosted: any[] = shuffle(boostedPool).slice(0, MAX_BOOSTED);
+    let boosted: any[] = [];
+    if (!validBefore) {
+      const boostedPool: any[] = await prisma.product.findMany({
+        where: { AND: [where, { boostedUntil: { gt: now } }] },
+        orderBy: { createdAt: 'desc' },
+        include,
+        take: BOOST_POOL,
+      });
+      boosted = shuffle(boostedPool).slice(0, MAX_BOOSTED);
+    }
     const boostedIds: string[] = boosted.map((p: any) => p.id as string);
 
-    const rest: any[] = await prisma.product.findMany({
-      where: { AND: [where, { id: { notIn: boostedIds } }] },
+    const restWhere: any = validBefore
+      ? { AND: [where, { createdAt: { lt: validBefore } }] }
+      : { AND: [where, { id: { notIn: boostedIds } }] };
+    const restTake = PAGE_SIZE - boosted.length;
+
+    // Ask for one extra product to know whether there is another batch.
+    const restPlusOne: any[] = await prisma.product.findMany({
+      where: restWhere,
       orderBy: { createdAt: 'desc' },
       include,
-      take: PAGE_SIZE - boosted.length,
+      take: restTake + 1,
     });
+    const hasMore = restPlusOne.length > restTake;
+    const rest: any[] = restPlusOne.slice(0, restTake);
+    if (hasMore && rest.length > 0) {
+      nextCursor = new Date(rest[rest.length - 1].createdAt).toISOString();
+    }
     products = [...boosted, ...rest];
+
+    if (!validBefore) {
+      totalCount = await prisma.product.count({ where });
+    }
   }
 
   // Compute review average/count per business in ONE query, instead of
@@ -168,7 +194,12 @@ export async function GET(req: Request) {
       : p.business,
   }));
 
-  return NextResponse.json(productsWithStats);
+  // The response stays a plain list. The cursor and total travel in headers.
+  const headers: Record<string, string> = {};
+  if (nextCursor) headers['X-Next-Cursor'] = nextCursor;
+  if (totalCount !== null) headers['X-Total-Count'] = String(totalCount);
+
+  return NextResponse.json(productsWithStats, { headers });
 }
 
 export async function POST(req: Request) {

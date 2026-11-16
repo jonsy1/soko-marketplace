@@ -1,11 +1,11 @@
 'use client';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/components/LanguageProvider';
 import { ProductGridSkeleton } from '@/components/Skeleton';
 import HeroSlider from '@/components/HeroSlider';
+import HomeShortcuts from '@/components/HomeShortcuts';
 
 // Dynamic imports
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
@@ -117,71 +117,8 @@ function HomeContent() {
         <HeroSlider />
       </div>
 
-      {/* BUYER TOOLS - eye-catching entry point */}
-      <section className="max-w-6xl mx-auto px-4 py-6">
-        <Link
-          href="/buyer-tools"
-          className="relative overflow-hidden flex items-center gap-4 bg-gradient-to-r from-night to-night/90 rounded-3xl p-5 group"
-        >
-          <span className="w-14 h-14 rounded-2xl bg-market-500 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14.7 6.3a4 4 0 0 0-5.66 5.66L4 17l3 3 5.04-5.04a4 4 0 0 0 5.66-5.66l-2.6-2.6-1.4 1.4-1.4-1.4 1.4-1.4z" />
-            </svg>
-          </span>
-          <div className="flex-1">
-            <p className="font-display text-lg font-bold text-white">Buyer Tools</p>
-            <p className="text-white/60 text-sm">Compare prices, find shops nearby, and shop smarter</p>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/50 shrink-0">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </Link>
-      </section>
-
-      {/* SHOPS NEAR YOU - link to full page */}
-      <section className="max-w-6xl mx-auto px-4 py-4">
-        <Link
-          href="/nearby"
-          className="flex items-center gap-3 bg-market-50 border border-night/10 rounded-2xl p-4 hover:bg-market-100 transition"
-        >
-          <span className="w-11 h-11 rounded-full bg-market-500 text-white flex items-center justify-center shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-          </span>
-          <div className="flex-1">
-            <p className="font-semibold text-night text-sm">Shops near you</p>
-            <p className="text-night/50 text-xs">See nearby shops on the map</p>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </Link>
-      </section>
-
-      {/* COMPANY SERVICES - link to services page */}
-      <section className="max-w-6xl mx-auto px-4 py-4">
-        <Link
-          href="/services"
-          className="flex items-center gap-3 bg-market-50 border border-night/10 rounded-2xl p-4 hover:bg-market-100 transition"
-        >
-          <span className="w-11 h-11 rounded-full bg-clay-500 text-white flex items-center justify-center shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="7" width="18" height="13" rx="2" />
-              <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-              <path d="M3 13h18" />
-            </svg>
-          </span>
-          <div className="flex-1">
-            <p className="font-semibold text-night text-sm">Huduma za kampuni</p>
-            <p className="text-night/50 text-xs">Picha, usafirishaji, ujenzi, uchapishaji na zaidi</p>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-night/40 shrink-0">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </Link>
-      </section>
+      {/* SHORTCUT CARDS: Buyer Tools, Shops Near You, Company Services */}
+      <HomeShortcuts />
 
       {/* PRODUCTS SECTION */}
       <section id="products-section" className="max-w-6xl mx-auto px-4 py-8">
